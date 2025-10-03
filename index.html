@@ -326,6 +326,7 @@
             gap: 10px;
             cursor: pointer;
             transition: background 0.2s;
+            position: relative;
         }
         
         .friend-item:hover {
@@ -353,6 +354,42 @@
         .friend-name {
             flex: 1;
             font-weight: 500;
+        }
+        
+        .friend-actions {
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .friend-item:hover .friend-actions {
+            opacity: 1;
+        }
+        
+        .friend-action-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .friend-action-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        .delete-friend-btn {
+            color: #e74c3c;
+        }
+        
+        .delete-friend-btn:hover {
+            background: rgba(231, 76, 60, 0.1);
         }
         
         .chat-area {
@@ -711,6 +748,121 @@
             gap: 5px;
         }
         
+        /* 确认弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 400px;
+            transform: translateY(-20px);
+            transition: transform 0.3s;
+        }
+        
+        .modal-overlay.show .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 20px 25px 10px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        
+        .modal-body {
+            padding: 10px 25px 20px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .modal-footer {
+            padding: 15px 25px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        
+        .modal-btn.cancel {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .modal-btn.cancel:hover {
+            background: #e0e0e0;
+        }
+        
+        .modal-btn.confirm {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .modal-btn.confirm:hover {
+            background: #c0392b;
+        }
+        
+        .modal-btn.success {
+            background: #4a6ee0;
+            color: white;
+        }
+        
+        .modal-btn.success:hover {
+            background: #3a5ed0;
+        }
+        
+        .success-modal .modal-header {
+            color: #2d7730;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .success-icon {
+            width: 24px;
+            height: 24px;
+            background: #2d7730;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .recall-modal .modal-header {
+            color: #e74c3c;
+        }
+        
         .chat-messages::-webkit-scrollbar,
         .friends-list::-webkit-scrollbar {
             width: 8px;
@@ -845,6 +997,10 @@
                 width: 70px;
                 height: 70px;
             }
+            
+            .friend-actions {
+                opacity: 1;
+            }
         }
         
         @media (max-width: 480px) {
@@ -923,6 +1079,33 @@
             display: flex;
             align-items: center;
             gap: 5px;
+        }
+        
+        .no-friend-selected {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .no-friend-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .no-friend-text {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        
+        .no-friend-hint {
+            font-size: 0.9rem;
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -1022,12 +1205,16 @@
                 
                 <div class="chat-area">
                     <div class="chat-messages" id="chatMessages">
-                        <div class="status">请先选择好友开始私聊</div>
+                        <div class="no-friend-selected">
+                            <div class="no-friend-icon">👤</div>
+                            <div class="no-friend-text">请先选择好友开始聊天</div>
+                            <div class="no-friend-hint">点击左侧好友列表选择一个好友，或添加新好友</div>
+                        </div>
                     </div>
                     
                     <div class="chat-input-container">
-                        <button class="emoji-btn" id="emojiBtn">😊</button>
-                        <button class="sticker-btn" id="stickerBtn">😺</button>
+                        <button class="emoji-btn" id="emojiBtn" disabled>😊</button>
+                        <button class="sticker-btn" id="stickerBtn" disabled>😺</button>
                         <input type="text" class="chat-input" id="messageInput" placeholder="请先选择好友..." disabled>
                         <button class="send-btn" id="sendBtn" disabled>发送</button>
                     </div>
@@ -1045,6 +1232,44 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认删除好友弹窗 -->
+    <div class="modal-overlay" id="deleteFriendModal">
+        <div class="modal">
+            <div class="modal-header">删除好友</div>
+            <div class="modal-body" id="deleteFriendMessage">确定要删除好友吗？删除后将无法恢复。</div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="cancelDeleteFriend">取消</button>
+                <button class="modal-btn confirm" id="confirmDeleteFriend">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认撤回消息弹窗 -->
+    <div class="modal-overlay recall-modal" id="recallMessageModal">
+        <div class="modal">
+            <div class="modal-header">撤回消息</div>
+            <div class="modal-body" id="recallMessageText">确定要撤回这条消息吗？撤回后对方将无法看到此消息。</div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="cancelRecallMessage">取消</button>
+                <button class="modal-btn confirm" id="confirmRecallMessage">撤回</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 注册成功弹窗 -->
+    <div class="modal-overlay success-modal" id="successModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="success-icon">✓</div>
+                <span>注册成功</span>
+            </div>
+            <div class="modal-body">您的账号已成功创建！请使用您的用户名和密码登录。</div>
+            <div class="modal-footer">
+                <button class="modal-btn success" id="closeSuccessModal">确定</button>
             </div>
         </div>
     </div>
@@ -1094,6 +1319,18 @@
         const stickerSearchBtn = document.getElementById('stickerSearchBtn');
         const stickerResults = document.getElementById('stickerResults');
         
+        // 弹窗元素
+        const deleteFriendModal = document.getElementById('deleteFriendModal');
+        const deleteFriendMessage = document.getElementById('deleteFriendMessage');
+        const cancelDeleteFriend = document.getElementById('cancelDeleteFriend');
+        const confirmDeleteFriend = document.getElementById('confirmDeleteFriend');
+        const recallMessageModal = document.getElementById('recallMessageModal');
+        const recallMessageText = document.getElementById('recallMessageText');
+        const cancelRecallMessage = document.getElementById('cancelRecallMessage');
+        const confirmRecallMessage = document.getElementById('confirmRecallMessage');
+        const successModal = document.getElementById('successModal');
+        const closeSuccessModal = document.getElementById('closeSuccessModal');
+        
         let supabase = null;
         let currentUser = null;
         let isConnected = false;
@@ -1107,6 +1344,10 @@
         let isStickerPickerOpen = false;
         // 添加一个集合来跟踪已处理的消息ID，防止重复显示
         let processedMessageIds = new Set();
+        // 用于跟踪待删除的好友
+        let friendToDelete = null;
+        // 用于跟踪待撤回的消息
+        let messageToRecall = null;
         
         document.addEventListener('DOMContentLoaded', function() {
             loginTab.addEventListener('click', () => switchAuthTab('login'));
@@ -1142,6 +1383,31 @@
                 if (e.key === 'Enter') {
                     searchStickers();
                 }
+            });
+            
+            // 弹窗事件监听
+            cancelDeleteFriend.addEventListener('click', () => {
+                deleteFriendModal.classList.remove('show');
+                friendToDelete = null;
+            });
+            
+            confirmDeleteFriend.addEventListener('click', deleteFriend);
+            
+            cancelRecallMessage.addEventListener('click', () => {
+                recallMessageModal.classList.remove('show');
+                messageToRecall = null;
+            });
+            
+            confirmRecallMessage.addEventListener('click', () => {
+                if (messageToRecall) {
+                    recallMessage(messageToRecall);
+                }
+                recallMessageModal.classList.remove('show');
+                messageToRecall = null;
+            });
+            
+            closeSuccessModal.addEventListener('click', () => {
+                successModal.classList.remove('show');
             });
             
             document.addEventListener('click', function(e) {
@@ -1263,6 +1529,55 @@
                 console.error('添加好友错误:', error);
                 showAddFriendMessage('添加好友失败: ' + error.message, 'error');
             }
+        }
+        
+        // 删除好友函数
+        function confirmDeleteFriendAction(friend) {
+            friendToDelete = friend;
+            deleteFriendMessage.textContent = `确定要删除好友 ${friend.username} 吗？删除后将无法恢复。`;
+            deleteFriendModal.classList.add('show');
+        }
+        
+        async function deleteFriend() {
+            if (!friendToDelete || !supabase || !currentUser) return;
+            
+            try {
+                // 删除双向好友关系
+                const { error } = await supabase
+                    .from('friends')
+                    .delete()
+                    .or(`and(user_id.eq.${currentUser.id},friend_id.eq.${friendToDelete.id}),and(user_id.eq.${friendToDelete.id},friend_id.eq.${currentUser.id})`);
+                
+                if (error) throw error;
+                
+                // 如果当前正在与删除的好友聊天，清空聊天区域
+                if (currentFriend && currentFriend.id === friendToDelete.id) {
+                    currentFriend = null;
+                    showNoFriendSelected();
+                    messageInput.placeholder = '请先选择好友...';
+                    disableChatInput();
+                }
+                
+                // 重新加载好友列表
+                loadFriends();
+                
+                // 关闭确认弹窗
+                deleteFriendModal.classList.remove('show');
+                friendToDelete = null;
+                
+                // 显示成功消息
+                showAddFriendMessage('好友已删除', 'success');
+                
+            } catch (error) {
+                console.error('删除好友错误:', error);
+                showAddFriendMessage('删除好友失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 撤回消息确认函数
+        function confirmRecallMessageAction(messageId) {
+            messageToRecall = messageId;
+            recallMessageModal.classList.add('show');
         }
         
         function initializeSupabase() {
@@ -1393,7 +1708,8 @@
                     refresh_token: 'demo_refresh_token_' + Date.now()
                 };
                 
-                showAuthMessage('登录成功!', 'success');
+                // 去除登录成功提示
+                // showAuthMessage('登录成功!', 'success');
                 
                 localStorage.setItem('supabaseSession', JSON.stringify(session));
                 
@@ -1465,8 +1781,8 @@
                 
                 console.log('注册成功:', data);
                 
-                // 添加注册成功提示弹窗
-                alert('注册成功！请使用您的用户名和密码登录');
+                // 使用自定义弹窗替代alert
+                successModal.classList.add('show');
                 
                 showAuthMessage('注册成功! 请使用您的用户名和密码登录', 'success');
                 
@@ -1499,7 +1815,8 @@
                 currentFriend = null;
                 authContainer.style.display = 'block';
                 chatContainer.style.display = 'none';
-                chatMessages.innerHTML = '<div class="status">请先登录</div>';
+                // 去除请先登录提示
+                showNoFriendSelected();
                 
                 loginUsername.value = '';
                 loginPassword.value = '';
@@ -1533,9 +1850,35 @@
             
             subscribeToFriends();
             
+            // 初始化时禁用聊天输入
+            disableChatInput();
+        }
+        
+        function disableChatInput() {
+            messageInput.disabled = true;
+            sendBtn.disabled = true;
+            emojiBtn.disabled = true;
+            stickerBtn.disabled = true;
+            messageInput.placeholder = "请先选择好友...";
+        }
+        
+        function enableChatInput() {
             messageInput.disabled = false;
             sendBtn.disabled = false;
-            messageInput.placeholder = "请先选择好友...";
+            emojiBtn.disabled = false;
+            stickerBtn.disabled = false;
+            messageInput.placeholder = `发送消息给 ${currentFriend.username}...`;
+            messageInput.focus();
+        }
+        
+        function showNoFriendSelected() {
+            chatMessages.innerHTML = `
+                <div class="no-friend-selected">
+                    <div class="no-friend-icon">👤</div>
+                    <div class="no-friend-text">请先选择好友开始聊天</div>
+                    <div class="no-friend-hint">点击左侧好友列表选择一个好友，或添加新好友</div>
+                </div>
+            `;
         }
         
         async function loadFriendCode() {
@@ -1622,8 +1965,23 @@
                 friendName.className = 'friend-name';
                 friendName.textContent = friend.profiles.username;
                 
+                const friendActions = document.createElement('div');
+                friendActions.className = 'friend-actions';
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'friend-action-btn delete-friend-btn';
+                deleteBtn.title = '删除好友';
+                deleteBtn.innerHTML = '🗑️';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // 阻止事件冒泡，避免触发选择好友
+                    confirmDeleteFriendAction(friend.profiles);
+                });
+                
+                friendActions.appendChild(deleteBtn);
+                
                 friendItem.appendChild(friendAvatar);
                 friendItem.appendChild(friendName);
+                friendItem.appendChild(friendActions);
                 
                 friendItem.addEventListener('click', () => {
                     selectFriend(friend.profiles);
@@ -1637,8 +1995,8 @@
             currentFriend = friend;
             renderFriendsList();
             
-            chatMessages.innerHTML = `<div class="status">与 ${friend.username} 的私聊</div>`;
-            messageInput.placeholder = `发送消息给 ${friend.username}...`;
+            // 启用聊天输入
+            enableChatInput();
             
             loadPrivateMessages();
             
@@ -1690,13 +2048,13 @@
                         addPrivateMessageToChat(message);
                     });
                 } else {
-                    addStatusMessage('暂无消息记录');
+                    // 没有任何消息，不显示任何内容
                 }
                 
                 scrollToBottom();
             } catch (error) {
                 console.error('加载私聊消息错误:', error);
-                addStatusMessage('加载消息失败: ' + error.message);
+                // 加载失败时，不显示错误信息
             }
         }
         
@@ -1771,7 +2129,6 @@
             }
             
             if (!isConnected || !supabase || !currentUser || !currentFriend) {
-                addStatusMessage('请先选择好友');
                 return;
             }
             
@@ -1828,7 +2185,6 @@
                 console.error('发送私聊消息错误:', error);
                 
                 markMessageAsFailed(tempMessageId);
-                addStatusMessage('发送失败: ' + error.message);
                 
                 messageInput.value = messageText;
             } finally {
@@ -1855,7 +2211,7 @@
                         <div class="message-text">${contentHtml}</div>
                         <div class="message-info">
                             <div class="message-time">${formatMessageTime(dbMessage.created_at)}</div>
-                            <button class="recall-btn" onclick="recallMessage('${dbMessage.id}')">撤回</button>
+                            <button class="recall-btn" onclick="confirmRecallMessageAction('${dbMessage.id}')">撤回</button>
                         </div>
                     `;
                 } else {
@@ -1911,7 +2267,6 @@
                 
             } catch (error) {
                 console.error('撤回消息错误:', error);
-                addStatusMessage('撤回失败: ' + error.message);
                 
                 restoreMessageLocally(messageId);
             }
@@ -2021,7 +2376,7 @@
                 const contentHtml = processMessageContent(message.content);
                 
                 const recallButton = message.sender_id === currentUser.id ? 
-                    `<button class="recall-btn" onclick="recallMessage('${message.id}')">撤回</button>` : 
+                    `<button class="recall-btn" onclick="confirmRecallMessageAction('${message.id}')">撤回</button>` : 
                     '';
                 
                 messageElement.innerHTML = `
@@ -2034,14 +2389,6 @@
             }
             
             chatMessages.appendChild(messageElement);
-        }
-        
-        function addStatusMessage(text) {
-            const statusElement = document.createElement('div');
-            statusElement.classList.add('status');
-            statusElement.textContent = text;
-            chatMessages.appendChild(statusElement);
-            scrollToBottom();
         }
         
         function scrollToBottom() {
@@ -2090,6 +2437,8 @@
         }
         
         function toggleEmojiPicker() {
+            if (!currentFriend) return;
+            
             if (isEmojiPickerOpen) {
                 closeEmojiPicker();
             } else {
@@ -2109,6 +2458,8 @@
         }
         
         function toggleStickerPicker() {
+            if (!currentFriend) return;
+            
             if (isStickerPickerOpen) {
                 closeStickerPicker();
             } else {
@@ -2186,6 +2537,8 @@
         }
         
         function insertEmoji(emoji) {
+            if (!currentFriend) return;
+            
             const input = messageInput;
             const start = input.selectionStart;
             const end = input.selectionEnd;
@@ -2198,6 +2551,8 @@
         }
         
         function insertSticker(url) {
+            if (!currentFriend) return;
+            
             // 直接发送表情包图片
             messageInput.value = url;
             sendMessage();
