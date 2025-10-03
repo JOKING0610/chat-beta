@@ -639,18 +639,23 @@
         }
         
         .sticker-results {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            display: flex;
             gap: 8px;
             max-height: 200px;
-            overflow-y: auto;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 5px 0;
+            flex-wrap: nowrap;
         }
         
         .sticker-item {
-            width: 100%;
+            width: 80px;
+            height: 80px;
             cursor: pointer;
             border-radius: 6px;
             transition: transform 0.2s;
+            flex-shrink: 0;
+            object-fit: contain;
         }
         
         .sticker-item:hover {
@@ -692,6 +697,17 @@
             text-align: center;
             padding: 10px;
             color: #666;
+        }
+        
+        .sticker-prompt {
+            text-align: center;
+            padding: 10px;
+            color: #666;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
         
         .chat-messages::-webkit-scrollbar,
@@ -823,6 +839,11 @@
                 left: 10px;
                 bottom: 65px;
             }
+            
+            .sticker-item {
+                width: 70px;
+                height: 70px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -860,6 +881,11 @@
                 width: 260px;
                 left: 5px;
                 bottom: 60px;
+            }
+            
+            .sticker-item {
+                width: 60px;
+                height: 60px;
             }
         }
         
@@ -908,7 +934,7 @@
             </div>
             
             <div id="authForms" style="display: none;">
-                <h2 style="text-align: center; margin-bottom: 25px; color: #4a6ee0;">欢迎使用Joking聊天室</h2>
+                <h2 style="text-align: center; margin-bottom: 25px; color: #4a6ee0;">欢迎使用Joking的聊天室</h2>
                 <div class="auth-tabs">
                     <div class="auth-tab active" id="loginTab">登录</div>
                     <div class="auth-tab" id="registerTab">注册</div>
@@ -1014,7 +1040,7 @@
                             <button class="sticker-search-btn" id="stickerSearchBtn">搜索</button>
                         </div>
                         <div class="sticker-results" id="stickerResults">
-                            <div class="status">输入关键词搜索表情包</div>
+                            <div class="sticker-prompt">🔍 输入关键词搜索表情包</div>
                         </div>
                     </div>
                 </div>
@@ -1809,8 +1835,11 @@
                 tempMessageElement.classList.remove('pending');
                 
                 if (!dbMessage.is_recalled) {
+                    // 修复：确保更新临时消息时也能正确显示图片
+                    const contentHtml = processMessageContent(dbMessage.content);
+                    
                     tempMessageElement.innerHTML = `
-                        <div class="message-text">${escapeHtml(dbMessage.content)}</div>
+                        <div class="message-text">${contentHtml}</div>
                         <div class="message-info">
                             <div class="message-time">${formatMessageTime(dbMessage.created_at)}</div>
                             <button class="recall-btn" onclick="recallMessage('${dbMessage.id}')">撤回</button>
@@ -1918,6 +1947,33 @@
             return `${dateStr} ${timeStr}`;
         }
         
+        // 新增函数：处理消息内容，将URL转换为图片
+        function processMessageContent(content) {
+            // 检查是否是图片URL的正则表达式
+            const imgRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp)(?:\?[^\s]*)?)/gi;
+            
+            // 如果整个消息内容就是一个图片URL，则直接显示为图片
+            if (imgRegex.test(content) && content.match(imgRegex).length === 1 && content.trim() === content.match(imgRegex)[0]) {
+                return `<img src="${content}" class="chat-image" onerror="this.style.display='none'" />`;
+            }
+            
+            // 否则，转义HTML并检查是否有图片URL
+            let escapedText = escapeHtml(content);
+            const parts = escapedText.split(imgRegex);
+            let result = '';
+            
+            for (let i = 0; i < parts.length; i++) {
+                // 如果是图片URL（在奇数索引位置）
+                if (i % 2 === 1) {
+                    result += `<img src="${parts[i]}" class="chat-image" onerror="this.style.display='none'" />`;
+                } else {
+                    result += parts[i];
+                }
+            }
+            
+            return result;
+        }
+        
         function addPrivateMessageToChat(message) {
             const existingMessage = document.querySelector(`.message[data-message-id="${message.id}"]`);
             if (existingMessage) {
@@ -1947,15 +2003,8 @@
                     </div>
                 `;
             } else {
-                const escapedText = escapeHtml(message.content);
-                
-                // 检查是否是图片URL
-                let contentHtml = escapedText;
-                const imgRegex = /https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp|bmp)(\?[^\s]*)?/gi;
-                
-                if (imgRegex.test(escapedText)) {
-                    contentHtml = escapedText.replace(imgRegex, '<img src="$&" class="chat-image" onerror="this.style.display=\'none\'" />');
-                }
+                // 使用新的消息内容处理函数
+                const contentHtml = processMessageContent(message.content);
                 
                 const recallButton = message.sender_id === currentUser.id ? 
                     `<button class="recall-btn" onclick="recallMessage('${message.id}')">撤回</button>` : 
@@ -2051,7 +2100,7 @@
             } else {
                 openStickerPicker();
                 closeEmojiPicker();
-                // 显示默认表情
+                // 显示默认提示
                 displayDefaultStickers();
             }
         }
@@ -2119,7 +2168,7 @@
         }
         
         function displayDefaultStickers() {
-            stickerResults.innerHTML = '<div class="status">输入关键词搜索表情包</div>';
+            stickerResults.innerHTML = '<div class="sticker-prompt">🔍 输入关键词搜索表情包</div>';
         }
         
         function insertEmoji(emoji) {
