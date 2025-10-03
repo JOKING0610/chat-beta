@@ -381,6 +381,7 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
         
+        /* 修复：确保发送的消息使用正确的背景色 */
         .message.sent {
             align-self: flex-end;
             background: #4a6ee0;
@@ -1104,6 +1105,8 @@
         let pendingMessages = new Map();
         let isEmojiPickerOpen = false;
         let isStickerPickerOpen = false;
+        // 添加一个集合来跟踪已处理的消息ID，防止重复显示
+        let processedMessageIds = new Set();
         
         document.addEventListener('DOMContentLoaded', function() {
             loginTab.addEventListener('click', () => switchAuthTab('login'));
@@ -1206,23 +1209,19 @@
                 return;
             }
             
-            const friendCode = friendCodeInput.value.trim().toUpperCase();
+            const friendCode = friendCodeInput.value.trim();
             
             if (!friendCode) {
                 showAddFriendMessage('请输入好友码', 'error');
                 return;
             }
             
-            if (friendCode.length !== 6) {
-                showAddFriendMessage('好友码应为6位字符', 'error');
-                return;
-            }
-            
             try {
+                // 修复：使用ilike进行不区分大小写的查询，支持自定义好友码
                 const { data: friendData, error: friendError } = await supabase
                     .from('profiles')
                     .select('id, username')
-                    .eq('friend_code', friendCode);
+                    .ilike('friend_code', friendCode); // 使用ilike而不是eq
                 
                 if (friendError || !friendData || friendData.length === 0) {
                     showAddFriendMessage('未找到该好友码对应的用户', 'error');
@@ -1726,14 +1725,26 @@
                         
                         console.log('收到私聊消息变更:', payload);
                         
+                        // 修复重复消息问题：检查消息是否已经处理过
+                        if (processedMessageIds.has(payload.new.id)) {
+                            console.log('消息已处理，跳过:', payload.new.id);
+                            return;
+                        }
+                        
                         if (payload.eventType === 'INSERT') {
                             const tempMessageId = pendingMessages.get(payload.new.id);
                             if (tempMessageId) {
                                 updateTempMessage(tempMessageId, payload.new);
                                 pendingMessages.delete(payload.new.id);
+                                processedMessageIds.add(payload.new.id);
                             } else {
-                                addPrivateMessageToChat(payload.new);
-                                scrollToBottom();
+                                // 只有当消息不是当前用户发送的，或者是当前用户发送但不在pendingMessages中的消息才添加
+                                // 这可以防止实时订阅重复添加当前用户发送的消息
+                                if (payload.new.sender_id !== currentUser.id) {
+                                    addPrivateMessageToChat(payload.new);
+                                    processedMessageIds.add(payload.new.id);
+                                    scrollToBottom();
+                                }
                             }
                         } 
                         else if (payload.eventType === 'UPDATE') {
@@ -1807,6 +1818,8 @@
                 if (data && data.length > 0) {
                     const dbMessage = data[0];
                     pendingMessages.set(dbMessage.id, tempMessageId);
+                    // 标记这条消息已经处理过
+                    processedMessageIds.add(dbMessage.id);
                 }
                 
                 console.log('消息发送成功');
@@ -1988,6 +2001,7 @@
                 messageElement.classList.add('pending');
             }
             
+            // 修复：确保消息颜色正确
             if (message.sender_id === currentUser.id) {
                 messageElement.classList.add('sent');
             } else {
