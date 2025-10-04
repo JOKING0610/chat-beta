@@ -15,7 +15,7 @@
         .chat-header{background:#4a6ee0;color:white;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.1);flex-shrink:0}
         .chat-header h1{font-size:1.5rem;font-weight:600;display:flex;align-items:center;gap:10px}
         .user-info{display:flex;align-items:center;gap:12px}
-        .user-avatar{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1.1rem}
+        .user-avatar{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1.1rem;background-size:cover;background-position:center}
         .header-buttons{display:flex;gap:10px}
         .header-btn{padding:8px 16px;background:rgba(255,255,255,0.2);color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;transition:background 0.3s;position:relative}
         .header-btn:hover{background:rgba(255,255,255,0.3)}
@@ -50,7 +50,7 @@
         .friend-item{padding:12px 20px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background 0.2s;position:relative}
         .friend-item:hover{background:#f0f8ff}
         .friend-item.active{background:#e6f0ff;border-left:3px solid #4a6ee0}
-        .friend-avatar{width:36px;height:36px;border-radius:50%;background:#4a6ee0;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:0.9rem;position:relative}
+        .friend-avatar{width:36px;height:36px;border-radius:50%;background:#4a6ee0;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:0.9rem;position:relative;background-size:cover;background-position:center}
         .friend-name{flex:1;font-weight:500}
         .friend-actions{display:flex;gap:5px;opacity:0;transition:opacity 0.3s}
         .friend-item:hover .friend-actions{opacity:1}
@@ -125,142 +125,24 @@
         .chat-messages::-webkit-scrollbar-thumb:hover,.friends-list::-webkit-scrollbar-thumb:hover{background:#a8a8a8}
         .unread-badge{position:absolute;top:-5px;right:-5px;background:#ff4757;color:white;border-radius:50%;width:18px;height:18px;font-size:0.7rem;display:flex;align-items:center;justify-content:center;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
         .unread-count{background:#ff4757;color:white;border-radius:10px;padding:2px 6px;font-size:0.7rem;margin-left:8px;font-weight:bold}
-        
-        /* 通知相关样式 */
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff4757;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        
-        .notification-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            width: 300px;
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-        }
-        
-        .notification-dropdown.show {
-            display: block;
-        }
-        
-        .notification-header {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .notification-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .notification-item {
-            padding: 12px 15px;
-            border-bottom: 1px solid #f0f0f0;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .notification-item:hover {
-            background: #f8f9fa;
-        }
-        
-        .notification-item:last-child {
-            border-bottom: none;
-        }
-        
-        .notification-friend-name {
-            font-weight: 500;
-            color: black; /* 修复：将好友名称颜色改为黑色 */
-        }
-        
-        .notification-message-preview {
-            font-size: 0.85rem;
-            color: #666;
-            margin-top: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 200px;
-        }
-        
-        .notification-count {
-            background: #4a6ee0;
-            color: white;
-            border-radius: 10px;
-            padding: 2px 8px;
-            font-size: 0.8rem;
-        }
-        
-        .notification-container {
-            position: relative;
-            display: inline-block;
-        }
-        
-        @media (max-width:768px){
-            .container{flex-direction:column}
-            .auth-container{width:100%;max-width:100%;margin:0;border-radius:0;height:100vh;justify-content:center;display:flex;flex-direction:column;padding:20px}
-            .chat-container{height:100vh;width:100%}
-            .chat-header{padding:12px 15px}
-            .chat-header h1{font-size:1.3rem}
-            .header-buttons{gap:6px}
-            .header-btn{padding:6px 10px;font-size:0.8rem}
-            .user-info{gap:8px}
-            .user-avatar{width:35px;height:35px;font-size:1rem}
-            .friends-sidebar{width:100%;position:absolute;z-index:10;height:100%}
-            .friends-sidebar.hidden{transform:translateX(-100%)}
-            .toggle-sidebar{display:flex}
-            .chat-area{width:100%}
-            .chat-messages{padding:15px;gap:15px}
-            .message{max-width:85%;padding:12px 15px}
-            .chat-input-container{padding:12px;gap:8px}
-            .chat-input{padding:12px 15px;font-size:16px;min-height:48px}
-            .send-btn{padding:10px 16px;min-width:60px;height:48px;font-size:0.9rem}
-            .emoji-picker{width:280px;left:10px;bottom:65px}
-            .sticker-picker{width:280px;left:10px;bottom:65px}
-            .sticker-item{width:70px;height:70px}
-            .friend-actions{opacity:1}
-            .unread-badge{width:16px;height:16px;font-size:0.6rem}
-            .unread-count{font-size:0.6rem;padding:1px 4px;margin-left:5px}
-            .notification-dropdown{width:250px}
-        }
-        @media (max-width:480px){
-            .auth-container{padding:15px}
-            .chat-header h1{font-size:1.2rem}
-            .message{max-width:90%}
-            .chat-input{min-height:44px;padding:10px 14px}
-            .send-btn{min-width:55px;height:44px;padding:8px 14px;font-size:0.85rem}
-            .emoji-picker{width:260px;left:5px;bottom:60px}
-            .sticker-picker{width:260px;left:5px;bottom:60px}
-            .sticker-item{width:60px;height:60px}
-            .notification-dropdown{width:220px}
-        }
-        @media screen and (-webkit-min-device-pixel-ratio:0){
-            select,textarea,input{font-size:16px!important}
-        }
+        .notification-badge{position:absolute;top:-5px;right:-5px;background:#ff4757;color:white;border-radius:50%;width:18px;height:18px;font-size:0.7rem;display:flex;align-items:center;justify-content:center;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+        .notification-dropdown{position:absolute;top:100%;right:0;background:white;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);width:300px;max-height:400px;overflow-y:auto;z-index:1000;display:none}
+        .notification-dropdown.show{display:block}
+        .notification-header{padding:12px 15px;border-bottom:1px solid #eee;font-weight:600;color:#333}
+        .notification-list{max-height:300px;overflow-y:auto}
+        .notification-item{padding:12px 15px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+        .notification-item:hover{background:#f8f9fa}
+        .notification-item:last-child{border-bottom:none}
+        .notification-friend-name{font-weight:500;color:black}
+        .notification-message-preview{font-size:0.85rem;color:#666;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+        .notification-count{background:#4a6ee0;color:white;border-radius:10px;padding:2px 8px;font-size:0.8rem}
+        .notification-container{position:relative;display:inline-block}
+        .no-notifications{color:black !important;text-align:center;padding:15px}
+        .sticker-results{scrollbar-width:thin;scrollbar-color:#c1c1c1 #f1f1f1}
+        .sticker-results::-webkit-scrollbar{height:8px}
+        .sticker-results::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}
+        .sticker-results::-webkit-scrollbar-thumb{background:#c1c1c1;border-radius:4px}
+        .sticker-results::-webkit-scrollbar-thumb:hover{background:#a8a8a8}
         .message.pending{opacity:0.7}
         .message.failed{opacity:0.5;background-color:#ffcccc}
         .retry-btn{background:rgba(255,255,255,0.2);color:white;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:0.6rem}
@@ -269,6 +151,98 @@
         .no-friend-icon{font-size:3rem;margin-bottom:15px;opacity:0.5}
         .no-friend-text{font-size:1.1rem;margin-bottom:10px}
         .no-friend-hint{font-size:0.9rem;opacity:0.7}
+        
+        /* 设置相关样式 */
+        .settings-modal .modal{max-width:500px}
+        .settings-tabs{display:flex;margin-bottom:20px;border-bottom:1px solid #eee}
+        .settings-tab{flex:1;padding:12px;text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.3s}
+        .settings-tab.active{border-bottom:2px solid #4a6ee0;color:#4a6ee0;font-weight:600}
+        .settings-content{padding:10px 0}
+        .settings-section{margin-bottom:20px}
+        .settings-section-title{font-weight:600;margin-bottom:10px;color:#333}
+        
+        /* 主题样式 */
+        body.theme-default {
+            --primary-color: #4a6ee0;
+            --primary-hover: #3a5ed0;
+            --background-color: white;
+            --text-color: #333;
+        }
+        
+        body.theme-green {
+            --primary-color: #2ecc71;
+            --primary-hover: #27ae60;
+            --background-color: white;
+            --text-color: #333;
+        }
+        
+        body.theme-purple {
+            --primary-color: #9b59b6;
+            --primary-hover: #8e44ad;
+            --background-color: white;
+            --text-color: #333;
+        }
+        
+        body.theme-red {
+            --primary-color: #e74c3c;
+            --primary-hover: #c0392b;
+            --background-color: white;
+            --text-color: #333;
+        }
+        
+        body.theme-dark {
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --background-color: #1a1a1a;
+            --text-color: #f0f0f0;
+        }
+        
+        /* 应用主题变量 */
+        .auth-btn, .send-btn, .add-btn, .copy-btn, .sticker-search-btn, .modal-btn.success, .modal-btn.confirm, 
+        .avatar-action-btn.primary {
+            background-color: var(--primary-color);
+        }
+        
+        .auth-btn:hover, .send-btn:hover, .add-btn:hover, .copy-btn:hover, .sticker-search-btn:hover, 
+        .modal-btn.success:hover, .modal-btn.confirm:hover, .avatar-action-btn.primary:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .auth-tab.active, .settings-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .form-input:focus, .chat-input:focus {
+            border-color: var(--primary-color);
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        
+        .auth-container, .chat-container {
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        
+        /* 字体大小样式 */
+        body.font-small {
+            font-size: 14px;
+        }
+        
+        body.font-normal {
+            font-size: 16px;
+        }
+        
+        body.font-large {
+            font-size: 18px;
+        }
+        
+        @media (max-width:768px){.container{flex-direction:column}.auth-container{width:100%;max-width:100%;margin:0;border-radius:0;height:100vh;justify-content:center;display:flex;flex-direction:column;padding:20px}.chat-container{height:100vh;width:100%}.chat-header{padding:12px 15px}.chat-header h1{font-size:1.3rem}.header-buttons{gap:6px}.header-btn{padding:6px 10px;font-size:0.8rem}.user-info{gap:8px}.user-avatar{width:35px;height:35px;font-size:1rem}.friends-sidebar{width:100%;position:absolute;z-index:10;height:100%}.friends-sidebar.hidden{transform:translateX(-100%)}.toggle-sidebar{display:flex}.chat-area{width:100%}.chat-messages{padding:15px;gap:15px}.message{max-width:85%;padding:12px 15px}.chat-input-container{padding:12px;gap:8px}.chat-input{padding:12px 15px;font-size:16px;min-height:48px}.send-btn{padding:10px 16px;min-width:60px;height:48px;font-size:0.9rem}.emoji-picker{width:280px;left:10px;bottom:65px}.sticker-picker{width:280px;left:10px;bottom:65px}.sticker-item{width:70px;height:70px}.friend-actions{opacity:1}.unread-badge{width:16px;height:16px;font-size:0.6rem}.unread-count{font-size:0.6rem;padding:1px 4px;margin-left:5px}.notification-dropdown{width:250px}}
+        @media (max-width:480px){.auth-container{padding:15px}.chat-header h1{font-size:1.2rem}.message{max-width:90%}.chat-input{min-height:44px;padding:10px 14px}.send-btn{min-width:55px;height:44px;padding:8px 14px;font-size:0.85rem}.emoji-picker{width:260px;left:5px;bottom:60px}.sticker-picker{width:260px;left:5px;bottom:60px}.sticker-item{width:60px;height:60px}.notification-dropdown{width:220px}}
+        @media screen and (-webkit-min-device-pixel-ratio:0){select,textarea,input{font-size:16px!important}}
     </style>
 </head>
 <body>
@@ -311,6 +285,11 @@
                         <input type="password" class="form-input" id="registerPassword" placeholder="请输入密码（至少6位）">
                     </div>
                     
+                    <div class="form-group">
+                        <label class="form-label">确认密码</label>
+                        <input type="password" class="form-input" id="confirmPassword" placeholder="请再次输入密码">
+                    </div>
+                    
                     <button class="auth-btn" id="registerBtn">注册</button>
                 </div>
                 
@@ -331,7 +310,6 @@
                     <div class="user-avatar" id="userAvatar">U</div>
                     <span id="userName">用户</span>
                     <div class="header-buttons">
-                        <!-- 新增通知按钮 -->
                         <div class="notification-container">
                             <button class="header-btn" id="notificationBtn">
                                 🔔
@@ -340,10 +318,10 @@
                             <div class="notification-dropdown" id="notificationDropdown">
                                 <div class="notification-header">未读消息</div>
                                 <div class="notification-list" id="notificationList">
-                                    <!-- 未读消息列表将在这里动态生成 -->
                                 </div>
                             </div>
                         </div>
+                        <button class="header-btn" id="settingsBtn">设置</button>
                         <button class="header-btn" id="friendsBtn">好友</button>
                         <button class="header-btn" id="logoutBtn">退出</button>
                     </div>
@@ -446,6 +424,62 @@
         </div>
     </div>
 
+    <!-- 设置模态框 -->
+    <div class="modal-overlay settings-modal" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">设置</div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <div class="settings-tab active" id="profileTab">个人资料</div>
+                    <div class="settings-tab" id="appearanceTab">外观</div>
+                </div>
+                
+                <div class="settings-content">
+                    <!-- 个人资料设置 -->
+                    <div class="settings-section" id="profileSettings">
+                        <div class="settings-section-title">个人资料</div>
+                        <div class="form-group">
+                            <label class="form-label">用户名</label>
+                            <input type="text" class="form-input" id="usernameInput" placeholder="用户名" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">好友码</label>
+                            <input type="text" class="form-input" id="friendCodeDisplay" placeholder="好友码" readonly>
+                        </div>
+                    </div>
+                    
+                    <!-- 外观设置 -->
+                    <div class="settings-section" id="appearanceSettings" style="display: none;">
+                        <div class="settings-section-title">主题设置</div>
+                        <div class="form-group">
+                            <label class="form-label">主题颜色</label>
+                            <select class="form-input" id="themeSelect">
+                                <option value="default">默认蓝色</option>
+                                <option value="green">绿色</option>
+                                <option value="purple">紫色</option>
+                                <option value="red">红色</option>
+                                <option value="dark">深色模式</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">字体大小</label>
+                            <select class="form-input" id="fontSizeSelect">
+                                <option value="small">小</option>
+                                <option value="normal" selected>正常</option>
+                                <option value="large">大</option>
+                            </select>
+                        </div>
+                        <button class="auth-btn" id="saveAppearanceBtn">保存外观设置</button>
+                        <div id="appearanceMessage"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="closeSettingsModal">关闭</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const SUPABASE_URL = 'https://rudtcwlggkaxykrhhdsn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1ZHRjd2xnZ2theHlrcmhoZHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzMzkyNjEsImV4cCI6MjA3NDkxNTI2MX0.Tb1zZvaRS2rppM1_7ka4WgpIh_PFxc4bLVHPG9T0AKg';
@@ -463,11 +497,13 @@
         const loginPassword = document.getElementById('loginPassword');
         const registerUsername = document.getElementById('registerUsername');
         const registerPassword = document.getElementById('registerPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
         const loginBtn = document.getElementById('loginBtn');
         const registerBtn = document.getElementById('registerBtn');
         const authMessage = document.getElementById('authMessage');
         const userAvatar = document.getElementById('userAvatar');
         const userName = document.getElementById('userName');
+        const settingsBtn = document.getElementById('settingsBtn');
         const friendsBtn = document.getElementById('friendsBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const friendsSidebar = document.getElementById('friendsSidebar');
@@ -490,13 +526,10 @@
         const stickerInput = document.getElementById('stickerInput');
         const stickerSearchBtn = document.getElementById('stickerSearchBtn');
         const stickerResults = document.getElementById('stickerResults');
-        
-        // 通知相关元素
         const notificationBtn = document.getElementById('notificationBtn');
         const notificationBadge = document.getElementById('notificationBadge');
         const notificationDropdown = document.getElementById('notificationDropdown');
         const notificationList = document.getElementById('notificationList');
-        
         const deleteFriendModal = document.getElementById('deleteFriendModal');
         const deleteFriendMessage = document.getElementById('deleteFriendMessage');
         const cancelDeleteFriend = document.getElementById('cancelDeleteFriend');
@@ -507,6 +540,20 @@
         const confirmRecallMessage = document.getElementById('confirmRecallMessage');
         const successModal = document.getElementById('successModal');
         const closeSuccessModal = document.getElementById('closeSuccessModal');
+        
+        // 设置相关元素
+        const settingsModal = document.getElementById('settingsModal');
+        const profileTab = document.getElementById('profileTab');
+        const appearanceTab = document.getElementById('appearanceTab');
+        const profileSettings = document.getElementById('profileSettings');
+        const appearanceSettings = document.getElementById('appearanceSettings');
+        const usernameInput = document.getElementById('usernameInput');
+        const friendCodeDisplay = document.getElementById('friendCodeDisplay');
+        const themeSelect = document.getElementById('themeSelect');
+        const fontSizeSelect = document.getElementById('fontSizeSelect');
+        const saveAppearanceBtn = document.getElementById('saveAppearanceBtn');
+        const appearanceMessage = document.getElementById('appearanceMessage');
+        const closeSettingsModal = document.getElementById('closeSettingsModal');
         
         let supabase = null;
         let currentUser = null;
@@ -523,7 +570,9 @@
         let friendToDelete = null;
         let messageToRecall = null;
         let unreadMessages = new Map();
-        let notificationMessages = new Map(); // 存储通知消息
+        let notificationMessages = new Map();
+        let currentStickerKeyword = '';
+        let loadedStickerUrls = new Set();
         
         document.addEventListener('DOMContentLoaded', function() {
             loginTab.addEventListener('click', () => switchAuthTab('login'));
@@ -531,6 +580,36 @@
             
             loginBtn.addEventListener('click', handleLogin);
             registerBtn.addEventListener('click', handleRegister);
+            
+            loginUsername.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+            
+            loginPassword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+            
+            registerUsername.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleRegister();
+                }
+            });
+            
+            registerPassword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleRegister();
+                }
+            });
+            
+            confirmPassword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleRegister();
+                }
+            });
             
             sendBtn.addEventListener('click', sendMessage);
             messageInput.addEventListener('keypress', function(e) {
@@ -542,6 +621,8 @@
             logoutBtn.addEventListener('click', handleLogout);
             
             friendsBtn.addEventListener('click', toggleFriendsSidebar);
+            
+            settingsBtn.addEventListener('click', openSettings);
             
             closeSidebar.addEventListener('click', toggleFriendsSidebar);
             
@@ -561,10 +642,21 @@
                 }
             });
             
-            // 通知按钮点击事件
+            stickerResults.addEventListener('wheel', function(e) {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    this.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+            
             notificationBtn.addEventListener('click', toggleNotificationDropdown);
             
-            // 点击页面其他位置关闭通知下拉列表
+            // 设置相关事件
+            profileTab.addEventListener('click', () => switchSettingsTab('profile'));
+            appearanceTab.addEventListener('click', () => switchSettingsTab('appearance'));
+            saveAppearanceBtn.addEventListener('click', saveAppearance);
+            closeSettingsModal.addEventListener('click', closeSettings);
+            
             document.addEventListener('click', function(e) {
                 if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
                     notificationDropdown.classList.remove('show');
@@ -610,6 +702,9 @@
             initializeSupabase();
             
             initializeEmojiPicker();
+            
+            // 加载保存的设置
+            loadSettings();
         });
         
         function toggleNotificationDropdown(e) {
@@ -635,7 +730,7 @@
             notificationList.innerHTML = '';
             
             if (notificationMessages.size === 0) {
-                notificationList.innerHTML = '<div class="notification-item">暂无未读消息</div>';
+                notificationList.innerHTML = '<div class="no-notifications">暂无未读消息</div>';
                 return;
             }
             
@@ -657,16 +752,11 @@
                     `;
                     
                     notificationItem.addEventListener('click', () => {
-                        // 跳转到该好友的聊天
                         selectFriend(friend.profiles);
-                        // 清除该好友的未读计数
                         unreadMessages.set(friendId, 0);
-                        // 修复：从通知消息中移除该好友的所有消息
                         notificationMessages.delete(friendId);
-                        // 更新通知徽章和下拉列表
                         updateNotificationBadge();
                         updateNotificationDropdown();
-                        // 隐藏下拉列表
                         notificationDropdown.classList.remove('show');
                     });
                     
@@ -684,7 +774,6 @@
             const messages = notificationMessages.get(friendId);
             messages.push(message);
             
-            // 只保留最近5条消息
             if (messages.length > 5) {
                 messages.shift();
             }
@@ -700,6 +789,81 @@
         
         function toggleFriendsSidebar() {
             friendsSidebar.classList.toggle('hidden');
+        }
+        
+        function openSettings() {
+            loadUserProfile();
+            settingsModal.classList.add('show');
+        }
+        
+        function closeSettings() {
+            settingsModal.classList.remove('show');
+        }
+        
+        function switchSettingsTab(tab) {
+            if (tab === 'profile') {
+                profileTab.classList.add('active');
+                appearanceTab.classList.remove('active');
+                profileSettings.style.display = 'block';
+                appearanceSettings.style.display = 'none';
+            } else {
+                profileTab.classList.remove('active');
+                appearanceTab.classList.add('active');
+                profileSettings.style.display = 'none';
+                appearanceSettings.style.display = 'block';
+            }
+        }
+        
+        function loadUserProfile() {
+            if (!currentUser) return;
+            
+            const username = currentUser.user_metadata?.username || '用户';
+            usernameInput.value = username;
+            friendCodeDisplay.value = friendCodeText.textContent;
+        }
+        
+        function saveAppearance() {
+            const theme = themeSelect.value;
+            const fontSize = fontSizeSelect.value;
+            
+            // 保存到本地存储
+            localStorage.setItem('chat_theme', theme);
+            localStorage.setItem('chat_font_size', fontSize);
+            
+            // 应用设置
+            applyAppearanceSettings(theme, fontSize);
+            
+            showAppearanceMessage('外观设置已保存', 'success');
+        }
+        
+        function applyAppearanceSettings(theme, fontSize) {
+            // 应用主题
+            document.body.classList.remove('theme-default', 'theme-green', 'theme-purple', 'theme-red', 'theme-dark');
+            document.body.classList.add(`theme-${theme}`);
+            
+            // 应用字体大小
+            document.body.classList.remove('font-small', 'font-normal', 'font-large');
+            document.body.classList.add(`font-${fontSize}`);
+        }
+        
+        function loadSettings() {
+            // 加载外观设置
+            const savedTheme = localStorage.getItem('chat_theme') || 'default';
+            const savedFontSize = localStorage.getItem('chat_font_size') || 'normal';
+            
+            themeSelect.value = savedTheme;
+            fontSizeSelect.value = savedFontSize;
+            
+            applyAppearanceSettings(savedTheme, savedFontSize);
+        }
+        
+        function showAppearanceMessage(message, type) {
+            appearanceMessage.textContent = message;
+            appearanceMessage.className = `auth-message ${type}`;
+            setTimeout(() => {
+                appearanceMessage.textContent = '';
+                appearanceMessage.className = '';
+            }, 3000);
         }
         
         function generateFriendCode() {
@@ -746,10 +910,11 @@
             }
             
             try {
+                // 查找好友码对应的用户
                 const { data: friendData, error: friendError } = await supabase
                     .from('profiles')
-                    .select('id, username')
-                    .ilike('friend_code', friendCode);
+                    .select('id, username, avatar_url')
+                    .eq('friend_code', friendCode);
                 
                 if (friendError || !friendData || friendData.length === 0) {
                     showAddFriendMessage('未找到该好友码对应的用户', 'error');
@@ -763,6 +928,7 @@
                     return;
                 }
                 
+                // 检查是否已经是好友
                 const { data: existingFriend, error: checkError } = await supabase
                     .from('friends')
                     .select('id')
@@ -773,6 +939,7 @@
                     return;
                 }
                 
+                // 添加好友关系
                 const { data, error } = await supabase
                     .from('friends')
                     .insert([
@@ -938,6 +1105,7 @@
             }
             
             try {
+                // 查找用户并验证密码
                 const { data: userData, error: userError } = await supabase
                     .from('profiles')
                     .select('*')
@@ -949,6 +1117,12 @@
                 }
                 
                 const user = userData[0];
+                
+                // 验证密码
+                if (user.password !== password) {
+                    showAuthMessage('用户名或密码错误', 'error');
+                    return;
+                }
                 
                 const userObj = {
                     id: user.id,
@@ -984,9 +1158,15 @@
             
             const username = registerUsername.value.trim();
             const password = registerPassword.value.trim();
+            const confirm = confirmPassword.value.trim();
             
-            if (!username || !password) {
+            if (!username || !password || !confirm) {
                 showAuthMessage('请填写所有字段', 'error');
+                return;
+            }
+            
+            if (password !== confirm) {
+                showAuthMessage('两次输入的密码不一致', 'error');
                 return;
             }
             
@@ -996,6 +1176,7 @@
             }
             
             try {
+                // 检查用户名是否已存在
                 const { data: existingUser, error: checkError } = await supabase
                     .from('profiles')
                     .select('id')
@@ -1016,6 +1197,7 @@
                 const newUser = {
                     id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                     username: username,
+                    password: password,
                     friend_code: friendCode,
                     created_at: new Date().toISOString()
                 };
@@ -1039,6 +1221,7 @@
                 
                 registerUsername.value = '';
                 registerPassword.value = '';
+                confirmPassword.value = '';
                 
                 switchAuthTab('login');
                 
@@ -1068,7 +1251,6 @@
                 chatContainer.style.display = 'none';
                 showNoFriendSelected();
                 
-                // 清空通知相关数据
                 unreadMessages.clear();
                 notificationMessages.clear();
                 updateNotificationBadge();
@@ -1087,11 +1269,49 @@
                 const username = currentUser.user_metadata?.username || '用户';
                 const initial = username.charAt(0).toUpperCase();
                 
-                userAvatar.textContent = initial;
+                // 加载用户头像
+                loadUserAvatarFromDB();
+                
                 userName.textContent = username;
                 
                 authContainer.style.display = 'none';
                 chatContainer.style.display = 'flex';
+            }
+        }
+        
+        async function loadUserAvatarFromDB() {
+            if (!currentUser || !supabase) return;
+            
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('avatar_url')
+                    .eq('id', currentUser.id);
+                
+                if (error) throw error;
+                
+                if (data && data.length > 0 && data[0].avatar_url) {
+                    updateUserAvatar(data[0].avatar_url);
+                } else {
+                    const username = currentUser.user_metadata?.username || '用户';
+                    const initial = username.charAt(0).toUpperCase();
+                    userAvatar.textContent = initial;
+                    userAvatar.style.backgroundImage = '';
+                }
+            } catch (error) {
+                console.error('加载用户头像错误:', error);
+            }
+        }
+        
+        function updateUserAvatar(avatarUrl) {
+            if (avatarUrl) {
+                userAvatar.style.backgroundImage = `url(${avatarUrl})`;
+                userAvatar.textContent = '';
+            } else {
+                const username = currentUser.user_metadata?.username || '用户';
+                const initial = username.charAt(0).toUpperCase();
+                userAvatar.textContent = initial;
+                userAvatar.style.backgroundImage = '';
             }
         }
         
@@ -1106,12 +1326,10 @@
             
             subscribeToFriends();
             
-            // 关键修复：初始化全局消息订阅，监听所有发送给当前用户的消息
             subscribeToAllMessages();
             
             disableChatInput();
             
-            // 初始化通知
             updateNotificationBadge();
             updateNotificationDropdown();
         }
@@ -1143,11 +1361,9 @@
             `;
         }
         
-        // 关键修复：新增全局消息订阅函数，监听所有发送给当前用户的消息
         function subscribeToAllMessages() {
             if (!supabase || !currentUser) return;
             
-            // 创建全局消息订阅
             const globalMessageSubscription = supabase
                 .channel('global_messages')
                 .on('postgres_changes', 
@@ -1157,33 +1373,26 @@
                         table: 'private_messages'
                     }, 
                     (payload) => {
-                        // 只处理发送给当前用户的消息
                         if (payload.new && payload.new.receiver_id === currentUser.id) {
                             console.log('收到新消息（全局订阅）:', payload);
                             
-                            // 检查消息是否已经处理过
                             if (processedMessageIds.has(payload.new.id)) {
                                 console.log('消息已处理，跳过:', payload.new.id);
                                 return;
                             }
                             
-                            // 如果当前正在与发送者聊天，直接显示消息
                             if (currentFriend && currentFriend.id === payload.new.sender_id) {
                                 addPrivateMessageToChat(payload.new);
                                 processedMessageIds.add(payload.new.id);
                                 scrollToBottom();
                             } else {
-                                // 否则，添加到通知系统
                                 const unreadCount = unreadMessages.get(payload.new.sender_id) || 0;
                                 unreadMessages.set(payload.new.sender_id, unreadCount + 1);
                                 
-                                // 添加通知消息
                                 addNotificationMessage(payload.new);
                                 
-                                // 更新通知徽章
                                 updateNotificationBadge();
                                 
-                                // 更新好友列表显示
                                 renderFriendsList();
                             }
                         }
@@ -1241,12 +1450,13 @@
             if (!supabase || !currentUser) return;
             
             try {
+                // 查询好友列表
                 const { data, error } = await supabase
                     .from('friends')
                     .select(`
                         friend_id,
                         profiles:friend_id (
-                            id, username
+                            id, username, avatar_url
                         )
                     `)
                     .eq('user_id', currentUser.id)
@@ -1286,7 +1496,18 @@
                 
                 const friendAvatar = document.createElement('div');
                 friendAvatar.className = 'friend-avatar';
-                friendAvatar.textContent = friend.profiles.username.charAt(0).toUpperCase();
+                
+                // 设置好友头像
+                const username = friend.profiles.username;
+                const initial = username.charAt(0).toUpperCase();
+                
+                if (friend.profiles.avatar_url) {
+                    friendAvatar.style.backgroundImage = `url(${friend.profiles.avatar_url})`;
+                    friendAvatar.textContent = '';
+                } else {
+                    friendAvatar.style.backgroundImage = '';
+                    friendAvatar.textContent = initial;
+                }
                 
                 const unreadCount = unreadMessages.get(friend.friend_id) || 0;
                 if (unreadCount > 0) {
@@ -1334,16 +1555,13 @@
         }
         
         function selectFriend(friend) {
-            // 重置该好友的未读消息计数
             unreadMessages.set(friend.id, 0);
             
-            // 修复：从通知消息中移除该好友的所有消息
             notificationMessages.delete(friend.id);
             
             currentFriend = friend;
             renderFriendsList();
             
-            // 更新通知徽章
             updateNotificationBadge();
             
             enableChatInput();
@@ -1443,7 +1661,6 @@
                                 pendingMessages.delete(payload.new.id);
                                 processedMessageIds.add(payload.new.id);
                             } else {
-                                // 修复：确保接收到的消息都能正确显示
                                 addPrivateMessageToChat(payload.new);
                                 processedMessageIds.add(payload.new.id);
                                 
@@ -1660,9 +1877,10 @@
         }
         
         function processMessageContent(content) {
-            const imgRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp)(?:\?[^\s]*)?)/gi;
+            const imgRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp|svg)(?:\?[^\s]*)?)/gi;
             
-            if (imgRegex.test(content) && content.match(imgRegex).length === 1 && content.trim() === content.match(imgRegex)[0]) {
+            const imgMatches = content.match(imgRegex);
+            if (imgMatches && imgMatches.length === 1 && content.trim() === imgMatches[0]) {
                 return `<img src="${content}" class="chat-image" onerror="this.style.display='none'" />`;
             }
             
@@ -1829,15 +2047,19 @@
             try {
                 stickerResults.innerHTML = '<div class="sticker-loading">正在搜索表情包...</div>';
                 
-                const apiUrl = `https://api.jkyai.top/API/wxbqss.php?count=10&msg=${encodeURIComponent(keyword)}`;
+                currentStickerKeyword = keyword;
+                
+                loadedStickerUrls.clear();
+                
+                const apiUrl = `https://api.jkyai.top/API/wxbqss.php?count=100&msg=${encodeURIComponent(keyword)}`;
                 
                 const response = await fetch(apiUrl);
                 const data = await response.json();
                 
-                if (data.code === 200) {
+                if (data.code === 200 && data.data && data.data.length > 0) {
                     displayStickers(data.data);
                 } else {
-                    stickerResults.innerHTML = '<div class="sticker-error">搜索失败，请重试</div>';
+                    stickerResults.innerHTML = '<div class="sticker-error">未找到相关表情包</div>';
                 }
             } catch (error) {
                 console.error('搜索表情包错误:', error);
@@ -1854,18 +2076,27 @@
             stickerResults.innerHTML = '';
             
             stickerUrls.forEach(url => {
-                const stickerItem = document.createElement('img');
-                stickerItem.className = 'sticker-item';
-                stickerItem.src = url;
-                stickerItem.alt = '表情包';
-                stickerItem.onerror = function() {
-                    this.style.display = 'none';
-                };
-                stickerItem.addEventListener('click', () => {
-                    insertSticker(url);
-                });
+                if (loadedStickerUrls.has(url)) {
+                    return;
+                }
+                loadedStickerUrls.add(url);
+                const stickerItem = createStickerItem(url);
                 stickerResults.appendChild(stickerItem);
             });
+        }
+        
+        function createStickerItem(url) {
+            const stickerItem = document.createElement('img');
+            stickerItem.className = 'sticker-item';
+            stickerItem.src = url;
+            stickerItem.alt = '表情包';
+            stickerItem.onerror = function() {
+                this.style.display = 'none';
+            };
+            stickerItem.addEventListener('click', () => {
+                insertSticker(url);
+            });
+            return stickerItem;
         }
         
         function displayDefaultStickers() {
