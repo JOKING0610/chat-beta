@@ -6,889 +6,128 @@
     <title>聊天室</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* 原有样式保持不变 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        .container {
-            display: flex;
-            width: 100%;
-            height: 100vh;
-        }
-        
-        .auth-container, .chat-container {
-            background: white;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-        }
-        
-        .auth-container {
-            width: 400px;
-            margin: auto;
-            border-radius: 12px;
-            padding: 30px;
-        }
-        
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-        
-        .chat-header {
-            background: #4a6ee0;
-            color: white;
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            flex-shrink: 0;
-        }
-        
-        .chat-header h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        
-        .header-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .header-btn {
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background 0.3s;
-        }
-        
-        .header-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .auth-tabs {
-            display: flex;
-            margin-bottom: 25px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .auth-tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s;
-        }
-        
-        .auth-tab.active {
-            border-bottom: 2px solid #4a6ee0;
-            color: #4a6ee0;
-            font-weight: 600;
-        }
-        
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-        
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .form-label {
-            font-size: 0.95rem;
-            color: #555;
-            font-weight: 500;
-        }
-        
-        .form-input {
-            padding: 14px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            outline: none;
-            font-size: 1rem;
-            transition: border 0.3s;
-        }
-        
-        .form-input:focus {
-            border-color: #4a6ee0;
-        }
-        
-        .auth-btn {
-            padding: 14px;
-            background: #4a6ee0;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 10px;
-            font-size: 1rem;
-            transition: background 0.3s;
-        }
-        
-        .auth-btn:hover {
-            background: #3a5ed0;
-        }
-        
-        .auth-message {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 0.95rem;
-        }
-        
-        .auth-message.success {
-            background: #e7f7ed;
-            color: #2d7730;
-        }
-        
-        .auth-message.error {
-            background: #fde8e8;
-            color: #c53030;
-        }
-        
-        .chat-content {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .friends-sidebar {
-            width: 280px;
-            background: #f8f9fa;
-            border-right: 1px solid #e1e8ed;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            flex-shrink: 0;
-            transition: transform 0.3s ease;
-        }
-        
-        .friends-sidebar.hidden {
-            transform: translateX(-100%);
-            position: absolute;
-            height: 100%;
-            z-index: 10;
-        }
-        
-        .toggle-sidebar {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            z-index: 20;
-            background: #4a6ee0;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .friends-header {
-            padding: 15px 20px;
-            background: #f0f8ff;
-            border-bottom: 1px solid #e1e8ed;
-            font-weight: 600;
-            color: #4a6ee0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .close-sidebar {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #4a6ee0;
-        }
-        
-        .friend-code-section {
-            padding: 15px 20px;
-            border-bottom: 1px solid #e1e8ed;
-            background: white;
-        }
-        
-        .friend-code {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .friend-code-text {
-            font-family: monospace;
-            background: #f5f5f5;
-            padding: 8px 12px;
-            border-radius: 6px;
-            flex: 1;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-        }
-        
-        .copy-btn {
-            background: #4a6ee0;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 6px 10px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        
-        .add-friend-section {
-            padding: 15px 20px;
-            border-bottom: 1px solid #e1e8ed;
-            background: white;
-        }
-        
-        .add-friend-input {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        
-        .friend-input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-        
-        .add-btn {
-            background: #4a6ee0;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        
-        .friends-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px 0;
-        }
-        
-        .friend-item {
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            transition: background 0.2s;
-            position: relative;
-        }
-        
-        .friend-item:hover {
-            background: #f0f8ff;
-        }
-        
-        .friend-item.active {
-            background: #e6f0ff;
-            border-left: 3px solid #4a6ee0;
-        }
-        
-        .friend-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #4a6ee0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 0.9rem;
-            position: relative;
-        }
-        
-        .friend-name {
-            flex: 1;
-            font-weight: 500;
-        }
-        
-        .friend-actions {
-            display: flex;
-            gap: 5px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .friend-item:hover .friend-actions {
-            opacity: 1;
-        }
-        
-        .friend-action-btn {
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 4px;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .friend-action-btn:hover {
-            background: rgba(0, 0, 0, 0.1);
-        }
-        
-        .delete-friend-btn {
-            color: #e74c3c;
-        }
-        
-        .delete-friend-btn:hover {
-            background: rgba(231, 76, 60, 0.1);
-        }
-        
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            padding: 25px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            background: #f8f9fa;
-        }
-        
-        .message {
-            max-width: 70%;
-            padding: 14px 18px;
-            border-radius: 18px;
-            position: relative;
-            line-height: 1.5;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-        
-        /* 修复：确保发送的消息使用正确的背景色 */
-        .message.sent {
-            align-self: flex-end;
-            background: #4a6ee0;
-            color: white;
-            border-bottom-right-radius: 6px;
-        }
-        
-        .message.received {
-            align-self: flex-start;
-            background: white;
-            color: #333;
-            border-bottom-left-radius: 6px;
-            border: 1px solid #e1e8ed;
-        }
-        
-        .message-info {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 8px;
-            font-size: 0.7rem;
-            opacity: 0.8;
-        }
-        
-        .message-time {
-            margin-top: 4px;
-        }
-        
-        .recall-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 2px 6px;
-            cursor: pointer;
-            font-size: 0.6rem;
-            margin-left: 8px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .message.sent:hover .recall-btn {
-            opacity: 1;
-        }
-        
-        .recall-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .recalled-message {
-            font-style: italic;
-            opacity: 0.7;
-        }
-        
-        .chat-input-container {
-            padding: 15px;
-            border-top: 1px solid #eee;
-            display: flex;
-            gap: 10px;
-            background: white;
-            flex-shrink: 0;
-            align-items: center;
-        }
-        
-        .chat-input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 24px;
-            outline: none;
-            font-size: 1rem;
-            transition: border 0.3s;
-            min-height: 50px;
-        }
-        
-        .chat-input:focus {
-            border-color: #4a6ee0;
-        }
-        
-        .send-btn {
-            padding: 12px 20px;
-            background: #4a6ee0;
-            color: white;
-            border: none;
-            border-radius: 24px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
-            min-width: 70px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .send-btn:hover {
-            background: #3a5ed0;
-        }
-        
-        .send-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .status {
-            text-align: center;
-            padding: 15px;
-            color: #666;
-            font-size: 1rem;
-        }
-        
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #4CAF50;
-        }
-        
-        .status-dot.offline {
-            background: #f44336;
-        }
-        
-        .loading-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-        
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4a6ee0;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .emoji-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 8px;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-        }
-        
-        .emoji-btn:hover {
-            background: #f0f0f0;
-        }
-        
-        .emoji-picker {
-            position: absolute;
-            bottom: 70px;
-            left: 15px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            padding: 15px;
-            width: 320px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 100;
-            display: none;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .emoji-picker.show {
-            display: flex;
-        }
-        
-        .emoji-item {
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 6px;
-            transition: background 0.2s;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .emoji-item:hover {
-            background: #f0f0f0;
-        }
-        
-        .emoji-category {
-            width: 100%;
-            font-weight: 600;
-            color: #4a6ee0;
-            margin-top: 10px;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-        
-        /* 表情包搜索面板样式 */
-        .sticker-picker {
-            position: absolute;
-            bottom: 70px;
-            left: 15px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            padding: 15px;
-            width: 320px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 100;
-            display: none;
-            flex-direction: column;
-        }
-        
-        .sticker-picker.show {
-            display: flex;
-        }
-        
-        .sticker-search {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        
-        .sticker-input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
-        
-        .sticker-search-btn {
-            background: #4a6ee0;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        
-        .sticker-results {
-            display: flex;
-            gap: 8px;
-            max-height: 200px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding: 5px 0;
-            flex-wrap: nowrap;
-        }
-        
-        .sticker-item {
-            width: 80px;
-            height: 80px;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: transform 0.2s;
-            flex-shrink: 0;
-            object-fit: contain;
-        }
-        
-        .sticker-item:hover {
-            transform: scale(1.05);
-        }
-        
-        .sticker-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 8px;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-        }
-        
-        .sticker-btn:hover {
-            background: #f0f0f0;
-        }
-        
-        .chat-image {
-            max-width: 200px;
-            border-radius: 8px;
-        }
-        
-        .sticker-error {
-            color: #c53030;
-            font-size: 0.9rem;
-            text-align: center;
-            padding: 10px;
-        }
-        
-        .sticker-loading {
-            text-align: center;
-            padding: 10px;
-            color: #666;
-        }
-        
-        .sticker-prompt {
-            text-align: center;
-            padding: 10px;
-            color: #666;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-        
-        /* 确认弹窗样式 */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-        
-        .modal-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            width: 90%;
-            max-width: 400px;
-            transform: translateY(-20px);
-            transition: transform 0.3s;
-        }
-        
-        .modal-overlay.show .modal {
-            transform: translateY(0);
-        }
-        
-        .modal-header {
-            padding: 20px 25px 10px;
-            font-weight: 600;
-            font-size: 1.2rem;
-            color: #333;
-        }
-        
-        .modal-body {
-            padding: 10px 25px 20px;
-            color: #666;
-            line-height: 1.5;
-        }
-        
-        .modal-footer {
-            padding: 15px 25px 20px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-        
-        .modal-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background 0.3s;
-        }
-        
-        .modal-btn.cancel {
-            background: #f0f0f0;
-            color: #333;
-        }
-        
-        .modal-btn.cancel:hover {
-            background: #e0e0e0;
-        }
-        
-        .modal-btn.confirm {
-            background: #e74c3c;
-            color: white;
-        }
-        
-        .modal-btn.confirm:hover {
-            background: #c0392b;
-        }
-        
-        .modal-btn.success {
-            background: #4a6ee0;
-            color: white;
-        }
-        
-        .modal-btn.success:hover {
-            background: #3a5ed0;
-        }
-        
-        .success-modal .modal-header {
-            color: #2d7730;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .success-icon {
-            width: 24px;
-            height: 24px;
-            background: #2d7730;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .recall-modal .modal-header {
-            color: #e74c3c;
-        }
-        
-        .chat-messages::-webkit-scrollbar,
-        .friends-list::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .chat-messages::-webkit-scrollbar-track,
-        .friends-list::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-        
-        .chat-messages::-webkit-scrollbar-thumb,
-        .friends-list::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 4px;
-        }
-        
-        .chat-messages::-webkit-scrollbar-thumb:hover,
-        .friends-list::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-        
-        /* 新增：未读消息计数样式 */
-        .unread-badge {
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
+        body{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);height:100vh;overflow:hidden}
+        .container{display:flex;width:100%;height:100vh}
+        .auth-container,.chat-container{background:white;box-shadow:0 10px 30px rgba(0,0,0,0.2);overflow:hidden}
+        .auth-container{width:400px;margin:auto;border-radius:12px;padding:30px}
+        .chat-container{flex:1;display:flex;flex-direction:column;width:100%}
+        .chat-header{background:#4a6ee0;color:white;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.1);flex-shrink:0}
+        .chat-header h1{font-size:1.5rem;font-weight:600;display:flex;align-items:center;gap:10px}
+        .user-info{display:flex;align-items:center;gap:12px}
+        .user-avatar{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1.1rem}
+        .header-buttons{display:flex;gap:10px}
+        .header-btn{padding:8px 16px;background:rgba(255,255,255,0.2);color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;transition:background 0.3s;position:relative}
+        .header-btn:hover{background:rgba(255,255,255,0.3)}
+        .auth-tabs{display:flex;margin-bottom:25px;border-bottom:1px solid #eee}
+        .auth-tab{flex:1;padding:12px;text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.3s}
+        .auth-tab.active{border-bottom:2px solid #4a6ee0;color:#4a6ee0;font-weight:600}
+        .auth-form{display:flex;flex-direction:column;gap:18px}
+        .form-group{display:flex;flex-direction:column;gap:8px}
+        .form-label{font-size:0.95rem;color:#555;font-weight:500}
+        .form-input{padding:14px;border:1px solid #ddd;border-radius:8px;outline:none;font-size:1rem;transition:border 0.3s}
+        .form-input:focus{border-color:#4a6ee0}
+        .auth-btn{padding:14px;background:#4a6ee0;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;margin-top:10px;font-size:1rem;transition:background 0.3s}
+        .auth-btn:hover{background:#3a5ed0}
+        .auth-message{margin-top:15px;padding:12px;border-radius:8px;text-align:center;font-size:0.95rem}
+        .auth-message.success{background:#e7f7ed;color:#2d7730}
+        .auth-message.error{background:#fde8e8;color:#c53030}
+        .chat-content{display:flex;flex:1;overflow:hidden;position:relative}
+        .friends-sidebar{width:280px;background:#f8f9fa;border-right:1px solid #e1e8ed;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:transform 0.3s ease}
+        .friends-sidebar.hidden{transform:translateX(-100%);position:absolute;height:100%;z-index:10}
+        .toggle-sidebar{position:absolute;top:15px;left:15px;z-index:20;background:#4a6ee0;color:white;border:none;border-radius:6px;padding:8px 12px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;gap:5px}
+        .friends-header{padding:15px 20px;background:#f0f8ff;border-bottom:1px solid #e1e8ed;font-weight:600;color:#4a6ee0;display:flex;justify-content:space-between;align-items:center}
+        .close-sidebar{background:none;border:none;font-size:1.2rem;cursor:pointer;color:#4a6ee0}
+        .friend-code-section{padding:15px 20px;border-bottom:1px solid #e1e8ed;background:white}
+        .friend-code{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+        .friend-code-text{font-family:monospace;background:#f5f5f5;padding:8px 12px;border-radius:6px;flex:1;font-size:0.9rem;letter-spacing:1px}
+        .copy-btn{background:#4a6ee0;color:white;border:none;border-radius:4px;padding:6px 10px;cursor:pointer;font-size:0.8rem}
+        .add-friend-section{padding:15px 20px;border-bottom:1px solid #e1e8ed;background:white}
+        .add-friend-input{display:flex;gap:8px;margin-bottom:10px}
+        .friend-input{flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:4px;font-size:0.9rem}
+        .add-btn{background:#4a6ee0;color:white;border:none;border-radius:4px;padding:8px 12px;cursor:pointer;font-size:0.9rem}
+        .friends-list{flex:1;overflow-y:auto;padding:10px 0}
+        .friend-item{padding:12px 20px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background 0.2s;position:relative}
+        .friend-item:hover{background:#f0f8ff}
+        .friend-item.active{background:#e6f0ff;border-left:3px solid #4a6ee0}
+        .friend-avatar{width:36px;height:36px;border-radius:50%;background:#4a6ee0;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:0.9rem;position:relative}
+        .friend-name{flex:1;font-weight:500}
+        .friend-actions{display:flex;gap:5px;opacity:0;transition:opacity 0.3s}
+        .friend-item:hover .friend-actions{opacity:1}
+        .friend-action-btn{background:none;border:none;color:#666;cursor:pointer;padding:5px;border-radius:4px;transition:background 0.3s;display:flex;align-items:center;justify-content:center}
+        .friend-action-btn:hover{background:rgba(0,0,0,0.1)}
+        .delete-friend-btn{color:#e74c3c}
+        .delete-friend-btn:hover{background:rgba(231,76,60,0.1)}
+        .chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+        .chat-messages{flex:1;padding:25px;overflow-y:auto;display:flex;flex-direction:column;gap:18px;background:#f8f9fa}
+        .message{max-width:70%;padding:14px 18px;border-radius:18px;position:relative;line-height:1.5;box-shadow:0 2px 5px rgba(0,0,0,0.05)}
+        .message.sent{align-self:flex-end;background:#4a6ee0;color:white;border-bottom-right-radius:6px}
+        .message.received{align-self:flex-start;background:white;color:#333;border-bottom-left-radius:6px;border:1px solid #e1e8ed}
+        .message-info{display:flex;justify-content:flex-end;margin-top:8px;font-size:0.7rem;opacity:0.8}
+        .message-time{margin-top:4px}
+        .recall-btn{background:rgba(255,255,255,0.2);color:white;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:0.6rem;margin-left:8px;opacity:0;transition:opacity 0.3s}
+        .message.sent:hover .recall-btn{opacity:1}
+        .recall-btn:hover{background:rgba(255,255,255,0.3)}
+        .recalled-message{font-style:italic;opacity:0.7}
+        .chat-input-container{padding:15px;border-top:1px solid #eee;display:flex;gap:10px;background:white;flex-shrink:0;align-items:center}
+        .chat-input{flex:1;padding:12px 15px;border:1px solid #ddd;border-radius:24px;outline:none;font-size:1rem;transition:border 0.3s;min-height:50px}
+        .chat-input:focus{border-color:#4a6ee0}
+        .send-btn{padding:12px 20px;background:#4a6ee0;color:white;border:none;border-radius:24px;cursor:pointer;font-weight:600;transition:background 0.3s;min-width:70px;height:50px;display:flex;align-items:center;justify-content:center}
+        .send-btn:hover{background:#3a5ed0}
+        .send-btn:disabled{background:#ccc;cursor:not-allowed}
+        .status{text-align:center;padding:15px;color:#666;font-size:1rem}
+        .status-dot{width:10px;height:10px;border-radius:50%;background:#4CAF50}
+        .status-dot.offline{background:#f44336}
+        .loading-container{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px}
+        .loading-spinner{width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #4a6ee0;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px}
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        .emoji-btn{background:none;border:none;font-size:1.5rem;cursor:pointer;padding:8px;border-radius:8px;transition:background 0.3s;display:flex;align-items:center;justify-content:center;width:40px;height:40px}
+        .emoji-btn:hover{background:#f0f0f0}
+        .emoji-picker{position:absolute;bottom:70px;left:15px;background:white;border:1px solid #ddd;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:15px;width:320px;max-height:300px;overflow-y:auto;z-index:100;display:none;flex-wrap:wrap;gap:8px}
+        .emoji-picker.show{display:flex}
+        .emoji-item{font-size:1.5rem;cursor:pointer;padding:5px;border-radius:6px;transition:background 0.2s;width:40px;height:40px;display:flex;align-items:center;justify-content:center}
+        .emoji-item:hover{background:#f0f0f0}
+        .emoji-category{width:100%;font-weight:600;color:#4a6ee0;margin-top:10px;margin-bottom:5px;font-size:0.9rem}
+        .sticker-picker{position:absolute;bottom:70px;left:15px;background:white;border:1px solid #ddd;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:15px;width:320px;max-height:300px;overflow-y:auto;z-index:100;display:none;flex-direction:column}
+        .sticker-picker.show{display:flex}
+        .sticker-search{display:flex;gap:8px;margin-bottom:10px}
+        .sticker-input{flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:0.9rem}
+        .sticker-search-btn{background:#4a6ee0;color:white;border:none;border-radius:6px;padding:8px 12px;cursor:pointer;font-size:0.9rem}
+        .sticker-results{display:flex;gap:8px;max-height:200px;overflow-x:auto;overflow-y:hidden;padding:5px 0;flex-wrap:nowrap}
+        .sticker-item{width:80px;height:80px;cursor:pointer;border-radius:6px;transition:transform 0.2s;flex-shrink:0;object-fit:contain}
+        .sticker-item:hover{transform:scale(1.05)}
+        .sticker-btn{background:none;border:none;font-size:1.5rem;cursor:pointer;padding:8px;border-radius:8px;transition:background 0.3s;display:flex;align-items:center;justify-content:center;width:40px;height:40px}
+        .sticker-btn:hover{background:#f0f0f0}
+        .chat-image{max-width:200px;border-radius:8px}
+        .sticker-error{color:#c53030;font-size:0.9rem;text-align:center;padding:10px}
+        .sticker-loading{text-align:center;padding:10px;color:#666}
+        .sticker-prompt{text-align:center;padding:10px;color:#666;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:5px}
+        .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;visibility:hidden;transition:all 0.3s}
+        .modal-overlay.show{opacity:1;visibility:visible}
+        .modal{background:white;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.3);width:90%;max-width:400px;transform:translateY(-20px);transition:transform 0.3s}
+        .modal-overlay.show .modal{transform:translateY(0)}
+        .modal-header{padding:20px 25px 10px;font-weight:600;font-size:1.2rem;color:#333}
+        .modal-body{padding:10px 25px 20px;color:#666;line-height:1.5}
+        .modal-footer{padding:15px 25px 20px;display:flex;justify-content:flex-end;gap:10px}
+        .modal-btn{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-weight:500;transition:background 0.3s}
+        .modal-btn.cancel{background:#f0f0f0;color:#333}
+        .modal-btn.cancel:hover{background:#e0e0e0}
+        .modal-btn.confirm{background:#e74c3c;color:white}
+        .modal-btn.confirm:hover{background:#c0392b}
+        .modal-btn.success{background:#4a6ee0;color:white}
+        .modal-btn.success:hover{background:#3a5ed0}
+        .success-modal .modal-header{color:#2d7730;display:flex;align-items:center;gap:10px}
+        .success-icon{width:24px;height:24px;background:#2d7730;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold}
+        .recall-modal .modal-header{color:#e74c3c}
+        .chat-messages::-webkit-scrollbar,.friends-list::-webkit-scrollbar{width:8px}
+        .chat-messages::-webkit-scrollbar-track,.friends-list::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}
+        .chat-messages::-webkit-scrollbar-thumb,.friends-list::-webkit-scrollbar-thumb{background:#c1c1c1;border-radius:4px}
+        .chat-messages::-webkit-scrollbar-thumb:hover,.friends-list::-webkit-scrollbar-thumb:hover{background:#a8a8a8}
+        .unread-badge{position:absolute;top:-5px;right:-5px;background:#ff4757;color:white;border-radius:50%;width:18px;height:18px;font-size:0.7rem;display:flex;align-items:center;justify-content:center;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+        .unread-count{background:#ff4757;color:white;border-radius:10px;padding:2px 6px;font-size:0.7rem;margin-left:8px;font-weight:bold}
+        
+        /* 通知相关样式 */
+        .notification-badge {
             position: absolute;
             top: -5px;
             right: -5px;
@@ -905,251 +144,131 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
-        .unread-count {
-            background: #ff4757;
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .notification-dropdown.show {
+            display: block;
+        }
+        
+        .notification-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-friend-name {
+            font-weight: 500;
+            color: black; /* 修复：将好友名称颜色改为黑色 */
+        }
+        
+        .notification-message-preview {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+        
+        .notification-count {
+            background: #4a6ee0;
             color: white;
             border-radius: 10px;
-            padding: 2px 6px;
-            font-size: 0.7rem;
-            margin-left: 8px;
-            font-weight: bold;
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            
-            .auth-container {
-                width: 100%;
-                max-width: 100%;
-                margin: 0;
-                border-radius: 0;
-                height: 100vh;
-                justify-content: center;
-                display: flex;
-                flex-direction: column;
-                padding: 20px;
-            }
-            
-            .chat-container {
-                height: 100vh;
-                width: 100%;
-            }
-            
-            .chat-header {
-                padding: 12px 15px;
-            }
-            
-            .chat-header h1 {
-                font-size: 1.3rem;
-            }
-            
-            .header-buttons {
-                gap: 6px;
-            }
-            
-            .header-btn {
-                padding: 6px 10px;
-                font-size: 0.8rem;
-            }
-            
-            .user-info {
-                gap: 8px;
-            }
-            
-            .user-avatar {
-                width: 35px;
-                height: 35px;
-                font-size: 1rem;
-            }
-            
-            .friends-sidebar {
-                width: 100%;
-                position: absolute;
-                z-index: 10;
-                height: 100%;
-            }
-            
-            .friends-sidebar.hidden {
-                transform: translateX(-100%);
-            }
-            
-            .toggle-sidebar {
-                display: flex;
-            }
-            
-            .chat-area {
-                width: 100%;
-            }
-            
-            .chat-messages {
-                padding: 15px;
-                gap: 15px;
-            }
-            
-            .message {
-                max-width: 85%;
-                padding: 12px 15px;
-            }
-            
-            .chat-input-container {
-                padding: 12px;
-                gap: 8px;
-            }
-            
-            .chat-input {
-                padding: 12px 15px;
-                font-size: 16px;
-                min-height: 48px;
-            }
-            
-            .send-btn {
-                padding: 10px 16px;
-                min-width: 60px;
-                height: 48px;
-                font-size: 0.9rem;
-            }
-            
-            .emoji-picker {
-                width: 280px;
-                left: 10px;
-                bottom: 65px;
-            }
-            
-            .sticker-picker {
-                width: 280px;
-                left: 10px;
-                bottom: 65px;
-            }
-            
-            .sticker-item {
-                width: 70px;
-                height: 70px;
-            }
-            
-            .friend-actions {
-                opacity: 1;
-            }
-            
-            /* 移动端未读消息样式调整 */
-            .unread-badge {
-                width: 16px;
-                height: 16px;
-                font-size: 0.6rem;
-            }
-            
-            .unread-count {
-                font-size: 0.6rem;
-                padding: 1px 4px;
-                margin-left: 5px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .auth-container {
-                padding: 15px;
-            }
-            
-            .chat-header h1 {
-                font-size: 1.2rem;
-            }
-            
-            .message {
-                max-width: 90%;
-            }
-            
-            .chat-input {
-                min-height: 44px;
-                padding: 10px 14px;
-            }
-            
-            .send-btn {
-                min-width: 55px;
-                height: 44px;
-                padding: 8px 14px;
-                font-size: 0.85rem;
-            }
-            
-            .emoji-picker {
-                width: 260px;
-                left: 5px;
-                bottom: 60px;
-            }
-            
-            .sticker-picker {
-                width: 260px;
-                left: 5px;
-                bottom: 60px;
-            }
-            
-            .sticker-item {
-                width: 60px;
-                height: 60px;
-            }
-        }
-        
-        @media screen and (-webkit-min-device-pixel-ratio:0) {
-            select,
-            textarea,
-            input {
-                font-size: 16px !important;
-            }
-        }
-        
-        .message.pending {
-            opacity: 0.7;
-        }
-        
-        .message.failed {
-            opacity: 0.5;
-            background-color: #ffcccc;
-        }
-        
-        .retry-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 2px 6px;
-            cursor: pointer;
-            font-size: 0.6rem;
-        }
-        
-        .connection-status {
+            padding: 2px 8px;
             font-size: 0.8rem;
-            opacity: 0.8;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
         
-        .no-friend-selected {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #666;
-            text-align: center;
-            padding: 20px;
+        .notification-container {
+            position: relative;
+            display: inline-block;
         }
         
-        .no-friend-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            opacity: 0.5;
+        @media (max-width:768px){
+            .container{flex-direction:column}
+            .auth-container{width:100%;max-width:100%;margin:0;border-radius:0;height:100vh;justify-content:center;display:flex;flex-direction:column;padding:20px}
+            .chat-container{height:100vh;width:100%}
+            .chat-header{padding:12px 15px}
+            .chat-header h1{font-size:1.3rem}
+            .header-buttons{gap:6px}
+            .header-btn{padding:6px 10px;font-size:0.8rem}
+            .user-info{gap:8px}
+            .user-avatar{width:35px;height:35px;font-size:1rem}
+            .friends-sidebar{width:100%;position:absolute;z-index:10;height:100%}
+            .friends-sidebar.hidden{transform:translateX(-100%)}
+            .toggle-sidebar{display:flex}
+            .chat-area{width:100%}
+            .chat-messages{padding:15px;gap:15px}
+            .message{max-width:85%;padding:12px 15px}
+            .chat-input-container{padding:12px;gap:8px}
+            .chat-input{padding:12px 15px;font-size:16px;min-height:48px}
+            .send-btn{padding:10px 16px;min-width:60px;height:48px;font-size:0.9rem}
+            .emoji-picker{width:280px;left:10px;bottom:65px}
+            .sticker-picker{width:280px;left:10px;bottom:65px}
+            .sticker-item{width:70px;height:70px}
+            .friend-actions{opacity:1}
+            .unread-badge{width:16px;height:16px;font-size:0.6rem}
+            .unread-count{font-size:0.6rem;padding:1px 4px;margin-left:5px}
+            .notification-dropdown{width:250px}
         }
-        
-        .no-friend-text {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
+        @media (max-width:480px){
+            .auth-container{padding:15px}
+            .chat-header h1{font-size:1.2rem}
+            .message{max-width:90%}
+            .chat-input{min-height:44px;padding:10px 14px}
+            .send-btn{min-width:55px;height:44px;padding:8px 14px;font-size:0.85rem}
+            .emoji-picker{width:260px;left:5px;bottom:60px}
+            .sticker-picker{width:260px;left:5px;bottom:60px}
+            .sticker-item{width:60px;height:60px}
+            .notification-dropdown{width:220px}
         }
-        
-        .no-friend-hint {
-            font-size: 0.9rem;
-            opacity: 0.7;
+        @media screen and (-webkit-min-device-pixel-ratio:0){
+            select,textarea,input{font-size:16px!important}
         }
+        .message.pending{opacity:0.7}
+        .message.failed{opacity:0.5;background-color:#ffcccc}
+        .retry-btn{background:rgba(255,255,255,0.2);color:white;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:0.6rem}
+        .connection-status{font-size:0.8rem;opacity:0.8;display:flex;align-items:center;gap:5px}
+        .no-friend-selected{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#666;text-align:center;padding:20px}
+        .no-friend-icon{font-size:3rem;margin-bottom:15px;opacity:0.5}
+        .no-friend-text{font-size:1.1rem;margin-bottom:10px}
+        .no-friend-hint{font-size:0.9rem;opacity:0.7}
     </style>
 </head>
 <body>
@@ -1212,6 +331,19 @@
                     <div class="user-avatar" id="userAvatar">U</div>
                     <span id="userName">用户</span>
                     <div class="header-buttons">
+                        <!-- 新增通知按钮 -->
+                        <div class="notification-container">
+                            <button class="header-btn" id="notificationBtn">
+                                🔔
+                                <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                            </button>
+                            <div class="notification-dropdown" id="notificationDropdown">
+                                <div class="notification-header">未读消息</div>
+                                <div class="notification-list" id="notificationList">
+                                    <!-- 未读消息列表将在这里动态生成 -->
+                                </div>
+                            </div>
+                        </div>
                         <button class="header-btn" id="friendsBtn">好友</button>
                         <button class="header-btn" id="logoutBtn">退出</button>
                     </div>
@@ -1279,7 +411,6 @@
         </div>
     </div>
 
-    <!-- 确认删除好友弹窗 -->
     <div class="modal-overlay" id="deleteFriendModal">
         <div class="modal">
             <div class="modal-header">删除好友</div>
@@ -1291,7 +422,6 @@
         </div>
     </div>
 
-    <!-- 确认撤回消息弹窗 -->
     <div class="modal-overlay recall-modal" id="recallMessageModal">
         <div class="modal">
             <div class="modal-header">撤回消息</div>
@@ -1303,7 +433,6 @@
         </div>
     </div>
 
-    <!-- 注册成功弹窗 -->
     <div class="modal-overlay success-modal" id="successModal">
         <div class="modal">
             <div class="modal-header">
@@ -1362,7 +491,12 @@
         const stickerSearchBtn = document.getElementById('stickerSearchBtn');
         const stickerResults = document.getElementById('stickerResults');
         
-        // 弹窗元素
+        // 通知相关元素
+        const notificationBtn = document.getElementById('notificationBtn');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationList = document.getElementById('notificationList');
+        
         const deleteFriendModal = document.getElementById('deleteFriendModal');
         const deleteFriendMessage = document.getElementById('deleteFriendMessage');
         const cancelDeleteFriend = document.getElementById('cancelDeleteFriend');
@@ -1385,15 +519,11 @@
         let pendingMessages = new Map();
         let isEmojiPickerOpen = false;
         let isStickerPickerOpen = false;
-        // 添加一个集合来跟踪已处理的消息ID，防止重复显示
         let processedMessageIds = new Set();
-        // 用于跟踪待删除的好友
         let friendToDelete = null;
-        // 用于跟踪待撤回的消息
         let messageToRecall = null;
-        
-        // 新增：未读消息计数器
-        let unreadMessages = new Map(); // 存储好友ID和未读消息数
+        let unreadMessages = new Map();
+        let notificationMessages = new Map(); // 存储通知消息
         
         document.addEventListener('DOMContentLoaded', function() {
             loginTab.addEventListener('click', () => switchAuthTab('login'));
@@ -1431,7 +561,28 @@
                 }
             });
             
-            // 弹窗事件监听
+            // 通知按钮点击事件
+            notificationBtn.addEventListener('click', toggleNotificationDropdown);
+            
+            // 点击页面其他位置关闭通知下拉列表
+            document.addEventListener('click', function(e) {
+                if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+                    notificationDropdown.classList.remove('show');
+                }
+                
+                if (isEmojiPickerOpen && 
+                    !emojiPicker.contains(e.target) && 
+                    !emojiBtn.contains(e.target)) {
+                    closeEmojiPicker();
+                }
+                
+                if (isStickerPickerOpen && 
+                    !stickerPicker.contains(e.target) && 
+                    !stickerBtn.contains(e.target)) {
+                    closeStickerPicker();
+                }
+            });
+            
             cancelDeleteFriend.addEventListener('click', () => {
                 deleteFriendModal.classList.remove('show');
                 friendToDelete = null;
@@ -1456,24 +607,90 @@
                 successModal.classList.remove('show');
             });
             
-            document.addEventListener('click', function(e) {
-                if (isEmojiPickerOpen && 
-                    !emojiPicker.contains(e.target) && 
-                    !emojiBtn.contains(e.target)) {
-                    closeEmojiPicker();
-                }
-                
-                if (isStickerPickerOpen && 
-                    !stickerPicker.contains(e.target) && 
-                    !stickerBtn.contains(e.target)) {
-                    closeStickerPicker();
-                }
-            });
-            
             initializeSupabase();
             
             initializeEmojiPicker();
         });
+        
+        function toggleNotificationDropdown(e) {
+            e.stopPropagation();
+            notificationDropdown.classList.toggle('show');
+        }
+        
+        function updateNotificationBadge() {
+            let totalUnread = 0;
+            unreadMessages.forEach(count => {
+                totalUnread += count;
+            });
+            
+            if (totalUnread > 0) {
+                notificationBadge.style.display = 'flex';
+                notificationBadge.textContent = totalUnread > 99 ? '99+' : totalUnread;
+            } else {
+                notificationBadge.style.display = 'none';
+            }
+        }
+        
+        function updateNotificationDropdown() {
+            notificationList.innerHTML = '';
+            
+            if (notificationMessages.size === 0) {
+                notificationList.innerHTML = '<div class="notification-item">暂无未读消息</div>';
+                return;
+            }
+            
+            notificationMessages.forEach((messages, friendId) => {
+                const friend = friends.find(f => f.friend_id === friendId);
+                if (friend && messages.length > 0) {
+                    const notificationItem = document.createElement('div');
+                    notificationItem.className = 'notification-item';
+                    
+                    const unreadCount = unreadMessages.get(friendId) || 0;
+                    const latestMessage = messages[messages.length - 1];
+                    
+                    notificationItem.innerHTML = `
+                        <div style="flex: 1;">
+                            <div class="notification-friend-name">${friend.profiles.username}</div>
+                            <div class="notification-message-preview">${escapeHtml(latestMessage.content)}</div>
+                        </div>
+                        <span class="notification-count">${unreadCount}</span>
+                    `;
+                    
+                    notificationItem.addEventListener('click', () => {
+                        // 跳转到该好友的聊天
+                        selectFriend(friend.profiles);
+                        // 清除该好友的未读计数
+                        unreadMessages.set(friendId, 0);
+                        // 修复：从通知消息中移除该好友的所有消息
+                        notificationMessages.delete(friendId);
+                        // 更新通知徽章和下拉列表
+                        updateNotificationBadge();
+                        updateNotificationDropdown();
+                        // 隐藏下拉列表
+                        notificationDropdown.classList.remove('show');
+                    });
+                    
+                    notificationList.appendChild(notificationItem);
+                }
+            });
+        }
+        
+        function addNotificationMessage(message) {
+            const friendId = message.sender_id;
+            if (!notificationMessages.has(friendId)) {
+                notificationMessages.set(friendId, []);
+            }
+            
+            const messages = notificationMessages.get(friendId);
+            messages.push(message);
+            
+            // 只保留最近5条消息
+            if (messages.length > 5) {
+                messages.shift();
+            }
+            
+            updateNotificationDropdown();
+        }
         
         function escapeHtml(text) {
             const div = document.createElement('div');
@@ -1529,11 +746,10 @@
             }
             
             try {
-                // 修复：使用ilike进行不区分大小写的查询，支持自定义好友码
                 const { data: friendData, error: friendError } = await supabase
                     .from('profiles')
                     .select('id, username')
-                    .ilike('friend_code', friendCode); // 使用ilike而不是eq
+                    .ilike('friend_code', friendCode);
                 
                 if (friendError || !friendData || friendData.length === 0) {
                     showAddFriendMessage('未找到该好友码对应的用户', 'error');
@@ -1577,7 +793,6 @@
             }
         }
         
-        // 删除好友函数
         function confirmDeleteFriendAction(friend) {
             friendToDelete = friend;
             deleteFriendMessage.textContent = `确定要删除好友 ${friend.username} 吗？删除后将无法恢复。`;
@@ -1588,7 +803,6 @@
             if (!friendToDelete || !supabase || !currentUser) return;
             
             try {
-                // 删除双向好友关系
                 const { error } = await supabase
                     .from('friends')
                     .delete()
@@ -1596,7 +810,6 @@
                 
                 if (error) throw error;
                 
-                // 如果当前正在与删除的好友聊天，清空聊天区域
                 if (currentFriend && currentFriend.id === friendToDelete.id) {
                     currentFriend = null;
                     showNoFriendSelected();
@@ -1604,14 +817,11 @@
                     disableChatInput();
                 }
                 
-                // 重新加载好友列表
                 loadFriends();
                 
-                // 关闭确认弹窗
                 deleteFriendModal.classList.remove('show');
                 friendToDelete = null;
                 
-                // 显示成功消息
                 showAddFriendMessage('好友已删除', 'success');
                 
             } catch (error) {
@@ -1620,7 +830,6 @@
             }
         }
         
-        // 撤回消息确认函数
         function confirmRecallMessageAction(messageId) {
             messageToRecall = messageId;
             recallMessageModal.classList.add('show');
@@ -1754,9 +963,6 @@
                     refresh_token: 'demo_refresh_token_' + Date.now()
                 };
                 
-                // 去除登录成功提示
-                // showAuthMessage('登录成功!', 'success');
-                
                 localStorage.setItem('supabaseSession', JSON.stringify(session));
                 
                 currentUser = userObj;
@@ -1827,7 +1033,6 @@
                 
                 console.log('注册成功:', data);
                 
-                // 使用自定义弹窗替代alert
                 successModal.classList.add('show');
                 
                 showAuthMessage('注册成功! 请使用您的用户名和密码登录', 'success');
@@ -1861,8 +1066,13 @@
                 currentFriend = null;
                 authContainer.style.display = 'block';
                 chatContainer.style.display = 'none';
-                // 去除请先登录提示
                 showNoFriendSelected();
+                
+                // 清空通知相关数据
+                unreadMessages.clear();
+                notificationMessages.clear();
+                updateNotificationBadge();
+                updateNotificationDropdown();
                 
                 loginUsername.value = '';
                 loginPassword.value = '';
@@ -1896,8 +1106,14 @@
             
             subscribeToFriends();
             
-            // 初始化时禁用聊天输入
+            // 关键修复：初始化全局消息订阅，监听所有发送给当前用户的消息
+            subscribeToAllMessages();
+            
             disableChatInput();
+            
+            // 初始化通知
+            updateNotificationBadge();
+            updateNotificationDropdown();
         }
         
         function disableChatInput() {
@@ -1925,6 +1141,64 @@
                     <div class="no-friend-hint">点击左侧好友列表选择一个好友，或添加新好友</div>
                 </div>
             `;
+        }
+        
+        // 关键修复：新增全局消息订阅函数，监听所有发送给当前用户的消息
+        function subscribeToAllMessages() {
+            if (!supabase || !currentUser) return;
+            
+            // 创建全局消息订阅
+            const globalMessageSubscription = supabase
+                .channel('global_messages')
+                .on('postgres_changes', 
+                    { 
+                        event: 'INSERT', 
+                        schema: 'public', 
+                        table: 'private_messages'
+                    }, 
+                    (payload) => {
+                        // 只处理发送给当前用户的消息
+                        if (payload.new && payload.new.receiver_id === currentUser.id) {
+                            console.log('收到新消息（全局订阅）:', payload);
+                            
+                            // 检查消息是否已经处理过
+                            if (processedMessageIds.has(payload.new.id)) {
+                                console.log('消息已处理，跳过:', payload.new.id);
+                                return;
+                            }
+                            
+                            // 如果当前正在与发送者聊天，直接显示消息
+                            if (currentFriend && currentFriend.id === payload.new.sender_id) {
+                                addPrivateMessageToChat(payload.new);
+                                processedMessageIds.add(payload.new.id);
+                                scrollToBottom();
+                            } else {
+                                // 否则，添加到通知系统
+                                const unreadCount = unreadMessages.get(payload.new.sender_id) || 0;
+                                unreadMessages.set(payload.new.sender_id, unreadCount + 1);
+                                
+                                // 添加通知消息
+                                addNotificationMessage(payload.new);
+                                
+                                // 更新通知徽章
+                                updateNotificationBadge();
+                                
+                                // 更新好友列表显示
+                                renderFriendsList();
+                            }
+                        }
+                    }
+                )
+                .subscribe((status) => {
+                    console.log('全局消息订阅状态:', status);
+                    if (status === 'SUBSCRIBED') {
+                        console.log('成功订阅全局消息');
+                    } else if (status === 'CHANNEL_ERROR') {
+                        console.error('全局消息订阅错误');
+                    } else if (status === 'TIMED_OUT') {
+                        console.error('全局消息订阅超时');
+                    }
+                });
         }
         
         async function loadFriendCode() {
@@ -1982,7 +1256,6 @@
                 
                 friends = data || [];
                 
-                // 初始化未读消息计数
                 friends.forEach(friend => {
                     if (!unreadMessages.has(friend.friend_id)) {
                         unreadMessages.set(friend.friend_id, 0);
@@ -2015,7 +1288,6 @@
                 friendAvatar.className = 'friend-avatar';
                 friendAvatar.textContent = friend.profiles.username.charAt(0).toUpperCase();
                 
-                // 添加未读消息徽章
                 const unreadCount = unreadMessages.get(friend.friend_id) || 0;
                 if (unreadCount > 0) {
                     const unreadBadge = document.createElement('div');
@@ -2028,7 +1300,6 @@
                 friendName.className = 'friend-name';
                 friendName.textContent = friend.profiles.username;
                 
-                // 在好友名称旁显示未读消息数
                 if (unreadCount > 0) {
                     const unreadCountElement = document.createElement('span');
                     unreadCountElement.className = 'unread-count';
@@ -2044,7 +1315,7 @@
                 deleteBtn.title = '删除好友';
                 deleteBtn.innerHTML = '🗑️';
                 deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // 阻止事件冒泡，避免触发选择好友
+                    e.stopPropagation();
                     confirmDeleteFriendAction(friend.profiles);
                 });
                 
@@ -2066,10 +1337,15 @@
             // 重置该好友的未读消息计数
             unreadMessages.set(friend.id, 0);
             
+            // 修复：从通知消息中移除该好友的所有消息
+            notificationMessages.delete(friend.id);
+            
             currentFriend = friend;
             renderFriendsList();
             
-            // 启用聊天输入
+            // 更新通知徽章
+            updateNotificationBadge();
+            
             enableChatInput();
             
             loadPrivateMessages();
@@ -2121,16 +1397,12 @@
                     data.forEach(message => {
                         addPrivateMessageToChat(message);
                     });
-                } else {
-                    // 没有任何消息，不显示任何内容
                 }
                 
-                // 新增：确保加载消息后自动滚动到底部
                 scrollToBottom();
                 
             } catch (error) {
                 console.error('加载私聊消息错误:', error);
-                // 加载失败时，不显示错误信息
             }
         }
         
@@ -2159,7 +1431,6 @@
                         
                         console.log('收到私聊消息变更:', payload);
                         
-                        // 修复重复消息问题：检查消息是否已经处理过
                         if (processedMessageIds.has(payload.new.id)) {
                             console.log('消息已处理，跳过:', payload.new.id);
                             return;
@@ -2168,26 +1439,15 @@
                         if (payload.eventType === 'INSERT') {
                             const tempMessageId = pendingMessages.get(payload.new.id);
                             if (tempMessageId) {
-                                // 这是发送方自己的消息，从服务器返回后更新临时消息
                                 updateTempMessage(tempMessageId, payload.new);
                                 pendingMessages.delete(payload.new.id);
                                 processedMessageIds.add(payload.new.id);
                             } else {
-                                // 只有当消息不是当前用户发送的，或者是当前用户发送但不在pendingMessages中的消息才添加
-                                // 这可以防止实时订阅重复添加当前用户发送的消息
-                                if (payload.new.sender_id !== currentUser.id) {
-                                    addPrivateMessageToChat(payload.new);
-                                    processedMessageIds.add(payload.new.id);
-                                    
-                                    // 新增：如果不是当前聊天窗口，增加未读消息计数
-                                    if (!currentFriend || currentFriend.id !== payload.new.sender_id) {
-                                        const unreadCount = unreadMessages.get(payload.new.sender_id) || 0;
-                                        unreadMessages.set(payload.new.sender_id, unreadCount + 1);
-                                        renderFriendsList();
-                                    }
-                                    
-                                    scrollToBottom();
-                                }
+                                // 修复：确保接收到的消息都能正确显示
+                                addPrivateMessageToChat(payload.new);
+                                processedMessageIds.add(payload.new.id);
+                                
+                                scrollToBottom();
                             }
                         } 
                         else if (payload.eventType === 'UPDATE') {
@@ -2259,11 +1519,8 @@
                 
                 if (data && data.length > 0) {
                     const dbMessage = data[0];
-                    // 修复：立即更新临时消息，而不是等待实时订阅
                     updateTempMessage(tempMessageId, dbMessage);
-                    // 同时添加到pendingMessages，以防实时订阅也收到相同的消息
                     pendingMessages.set(dbMessage.id, tempMessageId);
-                    // 标记这条消息已经处理过
                     processedMessageIds.add(dbMessage.id);
                 }
                 
@@ -2292,7 +1549,6 @@
                 tempMessageElement.classList.remove('pending');
                 
                 if (!dbMessage.is_recalled) {
-                    // 修复：确保更新临时消息时也能正确显示图片
                     const contentHtml = processMessageContent(dbMessage.content);
                     
                     tempMessageElement.innerHTML = `
@@ -2403,23 +1659,18 @@
             return `${dateStr} ${timeStr}`;
         }
         
-        // 新增函数：处理消息内容，将URL转换为图片
         function processMessageContent(content) {
-            // 检查是否是图片URL的正则表达式
             const imgRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|bmp)(?:\?[^\s]*)?)/gi;
             
-            // 如果整个消息内容就是一个图片URL，则直接显示为图片
             if (imgRegex.test(content) && content.match(imgRegex).length === 1 && content.trim() === content.match(imgRegex)[0]) {
                 return `<img src="${content}" class="chat-image" onerror="this.style.display='none'" />`;
             }
             
-            // 否则，转义HTML并检查是否有图片URL
             let escapedText = escapeHtml(content);
             const parts = escapedText.split(imgRegex);
             let result = '';
             
             for (let i = 0; i < parts.length; i++) {
-                // 如果是图片URL（在奇数索引位置）
                 if (i % 2 === 1) {
                     result += `<img src="${parts[i]}" class="chat-image" onerror="this.style.display='none'" />`;
                 } else {
@@ -2444,7 +1695,6 @@
                 messageElement.classList.add('pending');
             }
             
-            // 修复：确保消息颜色正确
             if (message.sender_id === currentUser.id) {
                 messageElement.classList.add('sent');
             } else {
@@ -2460,7 +1710,6 @@
                     </div>
                 `;
             } else {
-                // 使用新的消息内容处理函数
                 const contentHtml = processMessageContent(message.content);
                 
                 const recallButton = message.sender_id === currentUser.id ? 
@@ -2480,7 +1729,6 @@
         }
         
         function scrollToBottom() {
-            // 新增：确保滚动到底部
             setTimeout(() => {
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }, 100);
@@ -2556,7 +1804,6 @@
             } else {
                 openStickerPicker();
                 closeEmojiPicker();
-                // 显示默认提示
                 displayDefaultStickers();
             }
         }
@@ -2582,7 +1829,6 @@
             try {
                 stickerResults.innerHTML = '<div class="sticker-loading">正在搜索表情包...</div>';
                 
-                // 使用正确的API地址
                 const apiUrl = `https://api.jkyai.top/API/wxbqss.php?count=10&msg=${encodeURIComponent(keyword)}`;
                 
                 const response = await fetch(apiUrl);
@@ -2613,7 +1859,6 @@
                 stickerItem.src = url;
                 stickerItem.alt = '表情包';
                 stickerItem.onerror = function() {
-                    // 如果图片加载失败，隐藏这个元素
                     this.style.display = 'none';
                 };
                 stickerItem.addEventListener('click', () => {
@@ -2644,7 +1889,6 @@
         function insertSticker(url) {
             if (!currentFriend) return;
             
-            // 直接发送表情包图片
             messageInput.value = url;
             sendMessage();
             closeStickerPicker();
