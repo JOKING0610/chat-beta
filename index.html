@@ -6,6 +6,7 @@
     <title>聊天室</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* 原有样式保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -349,6 +350,7 @@
             color: white;
             font-weight: bold;
             font-size: 0.9rem;
+            position: relative;
         }
         
         .friend-name {
@@ -885,6 +887,34 @@
             background: #a8a8a8;
         }
         
+        /* 新增：未读消息计数样式 */
+        .unread-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .unread-count {
+            background: #ff4757;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -1000,6 +1030,19 @@
             
             .friend-actions {
                 opacity: 1;
+            }
+            
+            /* 移动端未读消息样式调整 */
+            .unread-badge {
+                width: 16px;
+                height: 16px;
+                font-size: 0.6rem;
+            }
+            
+            .unread-count {
+                font-size: 0.6rem;
+                padding: 1px 4px;
+                margin-left: 5px;
             }
         }
         
@@ -1348,6 +1391,9 @@
         let friendToDelete = null;
         // 用于跟踪待撤回的消息
         let messageToRecall = null;
+        
+        // 新增：未读消息计数器
+        let unreadMessages = new Map(); // 存储好友ID和未读消息数
         
         document.addEventListener('DOMContentLoaded', function() {
             loginTab.addEventListener('click', () => switchAuthTab('login'));
@@ -1935,6 +1981,14 @@
                 if (error) throw error;
                 
                 friends = data || [];
+                
+                // 初始化未读消息计数
+                friends.forEach(friend => {
+                    if (!unreadMessages.has(friend.friend_id)) {
+                        unreadMessages.set(friend.friend_id, 0);
+                    }
+                });
+                
                 renderFriendsList();
                 
             } catch (error) {
@@ -1961,9 +2015,26 @@
                 friendAvatar.className = 'friend-avatar';
                 friendAvatar.textContent = friend.profiles.username.charAt(0).toUpperCase();
                 
+                // 添加未读消息徽章
+                const unreadCount = unreadMessages.get(friend.friend_id) || 0;
+                if (unreadCount > 0) {
+                    const unreadBadge = document.createElement('div');
+                    unreadBadge.className = 'unread-badge';
+                    unreadBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    friendAvatar.appendChild(unreadBadge);
+                }
+                
                 const friendName = document.createElement('div');
                 friendName.className = 'friend-name';
                 friendName.textContent = friend.profiles.username;
+                
+                // 在好友名称旁显示未读消息数
+                if (unreadCount > 0) {
+                    const unreadCountElement = document.createElement('span');
+                    unreadCountElement.className = 'unread-count';
+                    unreadCountElement.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    friendName.appendChild(unreadCountElement);
+                }
                 
                 const friendActions = document.createElement('div');
                 friendActions.className = 'friend-actions';
@@ -1992,6 +2063,9 @@
         }
         
         function selectFriend(friend) {
+            // 重置该好友的未读消息计数
+            unreadMessages.set(friend.id, 0);
+            
             currentFriend = friend;
             renderFriendsList();
             
@@ -2051,7 +2125,9 @@
                     // 没有任何消息，不显示任何内容
                 }
                 
+                // 新增：确保加载消息后自动滚动到底部
                 scrollToBottom();
+                
             } catch (error) {
                 console.error('加载私聊消息错误:', error);
                 // 加载失败时，不显示错误信息
@@ -2092,6 +2168,7 @@
                         if (payload.eventType === 'INSERT') {
                             const tempMessageId = pendingMessages.get(payload.new.id);
                             if (tempMessageId) {
+                                // 这是发送方自己的消息，从服务器返回后更新临时消息
                                 updateTempMessage(tempMessageId, payload.new);
                                 pendingMessages.delete(payload.new.id);
                                 processedMessageIds.add(payload.new.id);
@@ -2101,6 +2178,14 @@
                                 if (payload.new.sender_id !== currentUser.id) {
                                     addPrivateMessageToChat(payload.new);
                                     processedMessageIds.add(payload.new.id);
+                                    
+                                    // 新增：如果不是当前聊天窗口，增加未读消息计数
+                                    if (!currentFriend || currentFriend.id !== payload.new.sender_id) {
+                                        const unreadCount = unreadMessages.get(payload.new.sender_id) || 0;
+                                        unreadMessages.set(payload.new.sender_id, unreadCount + 1);
+                                        renderFriendsList();
+                                    }
+                                    
                                     scrollToBottom();
                                 }
                             }
@@ -2174,6 +2259,9 @@
                 
                 if (data && data.length > 0) {
                     const dbMessage = data[0];
+                    // 修复：立即更新临时消息，而不是等待实时订阅
+                    updateTempMessage(tempMessageId, dbMessage);
+                    // 同时添加到pendingMessages，以防实时订阅也收到相同的消息
                     pendingMessages.set(dbMessage.id, tempMessageId);
                     // 标记这条消息已经处理过
                     processedMessageIds.add(dbMessage.id);
@@ -2392,7 +2480,10 @@
         }
         
         function scrollToBottom() {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // 新增：确保滚动到底部
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 100);
         }
         
         function updateConnectionStatus(connected) {
