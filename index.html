@@ -1512,19 +1512,15 @@ flex: 1;
                         case 'paste':
                             // 创建一个优雅降级的粘贴函数，特别针对Edge浏览器优化
                             async function smartPaste() {
-                                // 检测Edge浏览器
+                                // 检测浏览器类型
                                 const isEdge = /Edge\//i.test(navigator.userAgent) || /Edg\//i.test(navigator.userAgent);
+                                const isFirefox = /Firefox\//i.test(navigator.userAgent);
+                                const isChrome = /Chrome\//i.test(navigator.userAgent) && !isEdge;
+                                
+                                console.log('执行智能粘贴，浏览器检测:', { isEdge, isFirefox, isChrome });
                                 
                                 try {
-                                    // 对于Edge浏览器，使用特殊处理策略
-                                    if (isEdge) {
-                                        console.log('检测到Edge浏览器，使用Edge专用粘贴策略');
-                                        // Edge需要特殊处理，直接尝试临时输入框方法
-                                        const edgeResult = await handleEdgeBrowserPaste();
-                                        if (edgeResult) {
-                                            return true;
-                                        }
-                                    }
+                                    // 所有浏览器统一使用现代剪贴板API作为首选
                                     
                                     // 1. 首先尝试使用现代剪贴板API
                                     if (navigator.clipboard && window.isSecureContext) {
@@ -1560,54 +1556,78 @@ flex: 1;
                                         console.warn('execCommand粘贴失败: ', execErr);
                                     }
                                     
-                                    // 3. 创建一个临时输入元素处理粘贴
+                                    // 3. 创建一个临时输入元素，这是最通用的降级方法
                                     try {
+                                        // 创建临时输入元素
                                         const tempInput = document.createElement('textarea');
-                                        // 改进临时元素的样式，使其在所有浏览器中都不可见
+                                        // 确保元素完全不可见但仍可交互
                                         tempInput.style.position = 'fixed';
                                         tempInput.style.left = '-9999px';
+                                        tempInput.style.top = '-9999px';
                                         tempInput.style.opacity = '0';
                                         tempInput.style.pointerEvents = 'none';
                                         tempInput.style.zIndex = '-1';
                                         tempInput.style.width = '1px';
                                         tempInput.style.height = '1px';
+                                        tempInput.style.border = 'none';
+                                        tempInput.style.outline = 'none';
+                                        tempInput.style.resize = 'none';
+                                        tempInput.style.background = 'transparent';
+                                        tempInput.style.color = 'transparent';
                                         
+                                        // 添加到DOM
                                         document.body.appendChild(tempInput);
                                         
-                                        // 确保临时元素获得焦点
+                                        // 设置自动聚焦属性
+                                        tempInput.autofocus = true;
+                                        
+                                        // 强制聚焦和选择
                                         tempInput.focus();
+                                        tempInput.select();
                                         
-                                        // 使用setTimeout确保DOM更新完成
-                                        await new Promise(resolve => setTimeout(resolve, 50));
+                                        // 等待DOM更新
+                                        await new Promise(resolve => setTimeout(resolve, 100));
                                         
-                                        // 尝试触发粘贴
+                                        // 对于Firefox，使用特定的选择范围设置
+                                        if (isFirefox) {
+                                            tempInput.setSelectionRange(0, 999999);
+                                        }
+                                        
+                                        // 尝试使用execCommand粘贴（仅在某些浏览器中可能工作）
                                         const pasteSuccessful = document.execCommand('paste');
-                                        if (pasteSuccessful) {
+                                        
+                                        if (pasteSuccessful && tempInput.value) {
                                             // 获取粘贴的内容并插入到实际输入框
                                             const pastedText = tempInput.value;
                                             if (pastedText) {
                                                 const start = activeInput.selectionStart;
                                                 const end = activeInput.selectionEnd;
                                                 const value = activeInput.value;
-                                                 
+                                                  
                                                 activeInput.value = value.slice(0, start) + pastedText + value.slice(end);
                                                 activeInput.selectionStart = activeInput.selectionEnd = start + pastedText.length;
+                                                
+                                                // 触发输入事件
+                                                activeInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                                console.log('使用临时元素粘贴成功');
                                                 return true;
                                             }
                                         }
                                     } catch (tempErr) {
                                         console.warn('临时元素粘贴失败: ', tempErr);
+                                    } finally {
+                                        // 清理临时元素
+                                        const tempElements = document.querySelectorAll('textarea[style*="left: -9999px"]');
+                                        tempElements.forEach(el => {
+                                            if (el.parentNode) {
+                                                el.parentNode.removeChild(el);
+                                            }
+                                        });
                                     }
                                     
-                                    // 4. 对于Edge浏览器的特殊备用方法
-                                    if (isEdge) {
-                                        console.log('尝试Edge浏览器的最后备用方案');
-                                        // 在Edge中，可以尝试启用原生右键菜单进行粘贴
-                                        return await handleEdgeFallback();
-                                    }
-                                    
-                                    // 如果所有方法都失败，通知用户
+                                    // 如果所有方法都失败，显示友好通知
                                     console.error('所有粘贴方法都失败，请手动使用快捷键Ctrl+V粘贴');
+                                    showPasteNotification(activeInput, '粘贴操作被浏览器阻止，请尝试使用快捷键 Ctrl+V 或右键菜单粘贴');
                                     return false;
                                 } finally {
                                     // 确保焦点回到原始输入框
@@ -1615,86 +1635,62 @@ flex: 1;
                                 }
                             }
                             
-                            // Edge浏览器专用粘贴处理函数
-                            async function handleEdgeBrowserPaste() {
-                                try {
-                                    // 创建临时输入框，Edge对这种方式有时更友好
-                                    const tempInput = document.createElement('textarea');
-                                    tempInput.style.position = 'fixed';
-                                    tempInput.style.left = '-9999px';
-                                    tempInput.style.opacity = '0';
-                                    tempInput.style.pointerEvents = 'none';
-                                    tempInput.style.background = 'transparent';
-                                    tempInput.style.color = 'transparent';
-                                    
-                                    // 设置自动聚焦和自动选择属性
-                                    tempInput.autofocus = true;
-                                    
-                                    document.body.appendChild(tempInput);
-                                    
-                                    // 确保DOM更新
-                                    await new Promise(resolve => setTimeout(resolve, 100));
-                                    
-                                    // 强制获取焦点
-                                    tempInput.focus();
-                                    tempInput.select();
-                                    
-                                    // 尝试使用execCommand粘贴
-                                    const pasteResult = document.execCommand('paste');
-                                    
-                                    if (pasteResult && tempInput.value) {
-                                        // 将内容插入到原始输入框
-                                        const start = activeInput.selectionStart;
-                                        const end = activeInput.selectionEnd;
-                                        const value = activeInput.value;
-                                        
-                                        activeInput.value = value.slice(0, start) + tempInput.value + value.slice(end);
-                                        activeInput.selectionStart = activeInput.selectionEnd = start + tempInput.value.length;
-                                        return true;
-                                    }
-                                } catch (err) {
-                                    console.warn('Edge专用粘贴方法失败: ', err);
-                                } finally {
-                                    // 清理临时元素
-                                    const tempInput = document.querySelector('textarea[style*="left: -9999px"]');
-                                    if (tempInput && tempInput.parentNode) {
-                                        tempInput.parentNode.removeChild(tempInput);
-                                    }
+                            // 用户通知函数
+                            function showPasteNotification(targetElement, message) {
+                                // 创建通知元素
+                                let notification = document.getElementById('paste-notification');
+                                
+                                if (!notification) {
+                                    notification = document.createElement('div');
+                                    notification.id = 'paste-notification';
+                                    notification.style.cssText = `
+                                        position: fixed;
+                                        padding: 12px 20px;
+                                        background-color: #333;
+                                        color: white;
+                                        border-radius: 4px;
+                                        font-size: 14px;
+                                        z-index: 9999;
+                                        opacity: 0;
+                                        transition: opacity 0.3s, transform 0.3s;
+                                        transform: translateY(-10px);
+                                        pointer-events: none;
+                                        max-width: 300px;
+                                        text-align: center;
+                                    `;
+                                    document.body.appendChild(notification);
                                 }
-                                return false;
-                            }
-                            
-                            // Edge浏览器的最终备用方案
-                            async function handleEdgeFallback() {
-                                // 在某些情况下，最简单的方法是提示用户使用Ctrl+V
-                                // 但我们可以尝试模拟这个行为
-                                try {
-                                    // 确保输入框获得焦点
-                                    activeInput.focus();
-                                    
-                                    // 创建一个自定义事件，模拟Ctrl+V
-                                    const ctrlVEvent = new KeyboardEvent('keydown', {
-                                        key: 'v',
-                                        ctrlKey: true,
-                                        metaKey: true,
-                                        bubbles: true,
-                                        cancelable: true
-                                    });
-                                    
-                                    // 分发事件
-                                    const eventResult = activeInput.dispatchEvent(ctrlVEvent);
-                                    
-                                    if (eventResult) {
-                                        console.log('尝试模拟Ctrl+V事件');
-                                        // 给浏览器时间响应事件
-                                        await new Promise(resolve => setTimeout(resolve, 200));
-                                        // 检查输入框内容是否有变化
-                                        return true; // 即使不能确认，也返回true给用户尝试的机会
-                                    }
-                                } catch (err) {
-                                    console.warn('Edge备用方案失败: ', err);
+                                
+                                // 设置通知内容
+                                notification.textContent = message;
+                                
+                                // 定位通知
+                                if (targetElement) {
+                                    const rect = targetElement.getBoundingClientRect();
+                                    notification.style.left = `${rect.left + rect.width / 2 - 150}px`;
+                                    notification.style.bottom = `${window.innerHeight - rect.top + 20}px`;
+                                } else {
+                                    // 默认居中显示
+                                    notification.style.left = '50%';
+                                    notification.style.transform = 'translate(-50%, -10px)';
                                 }
-                                return false;
+                                
+                                // 显示通知
+                                notification.style.opacity = '1';
+                                notification.style.transform = targetElement ? 'translateY(0)' : 'translate(-50%, 0)';
+                                
+                                // 3秒后隐藏通知
+                                setTimeout(() => {
+                                    notification.style.opacity = '0';
+                                    notification.style.transform = targetElement ? 'translateY(-10px)' : 'translate(-50%, -10px)';
+                                    
+                                    // 完全隐藏后移除元素，避免DOM堆积
+                                    setTimeout(() => {
+                                        if (notification.parentNode) {
+                                            notification.parentNode.removeChild(notification);
+                                        }
+                                    }, 300);
+                                }, 3000);
                             }
                             
                             // 执行智能粘贴
@@ -1745,27 +1741,71 @@ flex: 1;
                             
                             function fallbackCopy() {
                                 try {
+                                    // 首先尝试直接在activeInput上执行复制命令
                                     activeInput.focus();
                                     const successful = document.execCommand('copy');
-                                    if (!successful) {
-                                        throw new Error('execCommand复制失败');
+                                    if (successful) {
+                                        console.log('使用execCommand复制成功');
+                                        return;
                                     }
+                                    throw new Error('execCommand复制失败');
                                 } catch (fallbackErr) {
                                     console.error('备用复制方法失败: ', fallbackErr);
                                     // 使用临时元素的最后手段
-                                    const tempTextArea = document.createElement('textarea');
-                                    tempTextArea.style.position = 'fixed';
-                                    tempTextArea.style.left = '-9999px';
-                                    tempTextArea.value = window.getSelection().toString();
-                                    document.body.appendChild(tempTextArea);
-                                    tempTextArea.select();
-                                    tempTextArea.setSelectionRange(0, 99999);
                                     try {
-                                        document.execCommand('copy');
+                                        const tempTextArea = document.createElement('textarea');
+                                        // 添加全面的样式确保元素不可见且不会影响布局
+                                        tempTextArea.style.position = 'fixed';
+                                        tempTextArea.style.left = '-9999px';
+                                        tempTextArea.style.top = '-9999px';
+                                        tempTextArea.style.opacity = '0';
+                                        tempTextArea.style.pointerEvents = 'none';
+                                        tempTextArea.style.zIndex = '-1';
+                                        tempTextArea.style.width = '1px';
+                                        tempTextArea.style.height = '1px';
+                                        tempTextArea.style.border = 'none';
+                                        tempTextArea.style.outline = 'none';
+                                        tempTextArea.style.resize = 'none';
+                                        tempTextArea.style.background = 'transparent';
+                                        tempTextArea.style.color = 'transparent';
+                                        
+                                        // 获取选中的文本
+                                        const selectedText = window.getSelection().toString() || activeInput.value.substring(
+                                            activeInput.selectionStart,
+                                            activeInput.selectionEnd
+                                        );
+                                        
+                                        tempTextArea.value = selectedText;
+                                        document.body.appendChild(tempTextArea);
+                                        
+                                        // 尝试两种选择方法确保兼容性
+                                        tempTextArea.select();
+                                        
+                                        // 针对Firefox的特殊处理
+                                        if (isFirefox) {
+                                            try {
+                                                tempTextArea.setSelectionRange(0, selectedText.length);
+                                            } catch (e) {
+                                                // 旧版Firefox可能不支持setSelectionRange
+                                                tempTextArea.createTextRange().select();
+                                            }
+                                        }
+                                        
+                                        // 尝试执行复制命令
+                                        const copyResult = document.execCommand('copy');
+                                        if (copyResult) {
+                                            console.log('使用临时元素复制成功');
+                                        }
                                     } catch (tempErr) {
                                         console.error('临时元素复制也失败: ', tempErr);
                                     } finally {
-                                        document.body.removeChild(tempTextArea);
+                                        // 确保清理所有可能的临时元素，避免DOM堆积
+                                        const tempElements = document.querySelectorAll('textarea[style*="left: -9999px"]');
+                                        tempElements.forEach(el => {
+                                            if (el.parentNode) {
+                                                el.parentNode.removeChild(el);
+                                            }
+                                        });
                                     }
                                 }
                             }
