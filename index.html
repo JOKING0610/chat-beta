@@ -111,9 +111,7 @@ flex: 1;
         .message.received{align-self:flex-start;background:white;color:#333;border-bottom-left-radius:6px;border:1px solid #e1e8ed}
         .message-info{display:flex;justify-content:flex-end;margin-top:8px;font-size:0.7rem;opacity:0.8}
         .message-time{margin-top:4px}
-        .recall-btn{background:rgba(255,255,255,0.2);color:white;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:0.6rem;margin-left:8px;opacity:0;transition:opacity 0.3s}
-        .message.sent:hover .recall-btn{opacity:1}
-        .recall-btn:hover{background:rgba(255,255,255,0.3)}
+        
         .recalled-message{font-style:italic;opacity:0.7}
         .chat-input-container{padding:15px;border-top:1px solid #eee;display:flex;gap:10px;background:white;flex-shrink:0;align-items:center}
         .chat-input{flex:1;padding:12px 15px;border:1px solid #ddd;border-radius:24px;outline:none;font-size:1rem;transition:border 0.3s;min-height:50px}
@@ -1303,7 +1301,8 @@ flex: 1;
             { id: 'paste', text: '粘贴 (Paste)', action: 'paste' },
             { id: 'copy', text: '复制 (Copy)', action: 'copy' },
             { id: 'selectAll', text: '全选 (Select All)', action: 'selectAll' },
-            { id: 'clear', text: '清空 (Clear)', action: 'clear' }
+            { id: 'clear', text: '清空 (Clear)', action: 'clear' },
+            { id: 'refresh', text: '刷新页面 (Refresh)', action: 'refresh' }
         ];
         
         menuItems.forEach(item => {
@@ -1371,10 +1370,21 @@ flex: 1;
                     // 根据是否有选中的文本启用/禁用菜单项
                     document.getElementById('copy').style.display = hasSelection ? 'block' : 'none';
                     
+                    // 始终显示粘贴选项
+                    document.getElementById('paste').style.display = 'block';
+                    
                     // 为好友码输入框特殊处理：显示清空而不是全选
                     const isFriendCodeInput = this === friendCodeInput;
                     document.getElementById('selectAll').style.display = isFriendCodeInput ? 'none' : 'block';
                     document.getElementById('clear').style.display = isFriendCodeInput ? 'block' : 'none';
+                    
+                    // 在输入框右键菜单中隐藏刷新选项和撤回消息选项
+                    document.getElementById('refresh').style.display = 'none';
+                    // 隐藏撤回消息选项（如果存在）
+                    const recallItem = document.getElementById('recall');
+                    if (recallItem) {
+                        recallItem.style.display = 'none';
+                    }
                     
                     // 定位并显示右键菜单
                     const rect = this.getBoundingClientRect();
@@ -1419,39 +1429,345 @@ flex: 1;
         document.querySelectorAll('.context-menu-item').forEach(item => {
             item.addEventListener('click', function() {
                 const action = this.dataset.action;
+                const elementType = this.dataset.elementType;
+                const messageId = this.dataset.messageId;
                 const menu = document.getElementById('customContextMenu');
                 
-                if (activeInput && activeInput.focus) {
+                // 处理消息右键菜单
+                if (elementType === 'message') {
+                    if (this.id === 'copy' || action === 'copy') {
+                        // 复制消息内容
+                        const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
+                        if (messageElement) {
+                            const messageTextElement = messageElement.querySelector('.message-text');
+                            let messageText = '';
+                            
+                            // 检查消息是否只包含图片
+                            const imgElement = messageTextElement.querySelector('img');
+                            if (imgElement && messageTextElement.children.length === 1) {
+                                // 如果消息只包含图片，复制图片URL
+                                messageText = imgElement.src;
+                            } else {
+                                // 否则复制文本内容
+                                messageText = messageTextElement.textContent;
+                            }
+                            
+                            // 使用现代剪贴板API
+                            if (navigator.clipboard && window.isSecureContext) {
+                                navigator.clipboard.writeText(messageText)
+                                    .then(() => {
+                                        console.log('消息已复制到剪贴板');
+                                    })
+                                    .catch(err => {
+                                        console.error('复制消息失败: ', err);
+                                        // 尝试创建临时输入元素进行复制
+                                        const tempInput = document.createElement('textarea');
+                                        tempInput.style.position = 'fixed';
+                                        tempInput.style.left = '-9999px';
+                                        tempInput.value = messageText;
+                                        document.body.appendChild(tempInput);
+                                        tempInput.select();
+                                        tempInput.setSelectionRange(0, 99999); // 确保全选
+                                        try {
+                                            const successful = document.execCommand('copy');
+                                            if (successful) {
+                                                console.log('备用复制方法成功');
+                                            }
+                                        } catch (fallbackErr) {
+                                            console.error('备用复制方法也失败: ', fallbackErr);
+                                        } finally {
+                                            document.body.removeChild(tempInput);
+                                        }
+                                    });
+                            } else {
+                                // 回退方法
+                                const tempInput = document.createElement('textarea');
+                                tempInput.style.position = 'fixed';
+                                tempInput.style.left = '-9999px';
+                                tempInput.value = messageText;
+                                document.body.appendChild(tempInput);
+                                tempInput.select();
+                                tempInput.setSelectionRange(0, 99999); // 确保全选
+                                try {
+                                    const successful = document.execCommand('copy');
+                                    if (successful) {
+                                        console.log('回退复制方法成功');
+                                    }
+                                } catch (fallbackErr) {
+                                    console.error('复制消息失败: ', fallbackErr);
+                                } finally {
+                                    document.body.removeChild(tempInput);
+                                }
+                            }
+                        }
+                    }
+                }
+                // 处理输入框右键菜单
+                else if (activeInput && activeInput.focus) {
                     // 确保输入框获得焦点
                     activeInput.focus();
                     
                     // 执行对应的操作
                     switch(action) {
                         case 'paste':
-                            // 使用现代API粘贴内容
-                            navigator.clipboard.readText().then(text => {
-                                // 获取当前光标位置和选中文本
-                                const start = activeInput.selectionStart;
-                                const end = activeInput.selectionEnd;
-                                const value = activeInput.value;
+                            // 创建一个优雅降级的粘贴函数，特别针对Edge浏览器优化
+                            async function smartPaste() {
+                                // 检测Edge浏览器
+                                const isEdge = /Edge\//i.test(navigator.userAgent) || /Edg\//i.test(navigator.userAgent);
                                 
-                                // 插入剪贴板内容并更新光标位置
-                                activeInput.value = value.slice(0, start) + text + value.slice(end);
-                                activeInput.selectionStart = activeInput.selectionEnd = start + text.length;
-                            }).catch(err => {
-                                console.error('无法读取剪贴板内容: ', err);
-                                // 备用方案：尝试使用execCommand
                                 try {
+                                    // 对于Edge浏览器，使用特殊处理策略
+                                    if (isEdge) {
+                                        console.log('检测到Edge浏览器，使用Edge专用粘贴策略');
+                                        // Edge需要特殊处理，直接尝试临时输入框方法
+                                        const edgeResult = await handleEdgeBrowserPaste();
+                                        if (edgeResult) {
+                                            return true;
+                                        }
+                                    }
+                                    
+                                    // 1. 首先尝试使用现代剪贴板API
+                                    if (navigator.clipboard && window.isSecureContext) {
+                                        try {
+                                            const text = await navigator.clipboard.readText();
+                                            if (text) {
+                                                // 获取当前光标位置和选中文本
+                                                const start = activeInput.selectionStart;
+                                                const end = activeInput.selectionEnd;
+                                                const value = activeInput.value;
+                                                 
+                                                // 插入剪贴板内容并更新光标位置
+                                                activeInput.value = value.slice(0, start) + text + value.slice(end);
+                                                activeInput.selectionStart = activeInput.selectionEnd = start + text.length;
+                                                return true;
+                                            }
+                                        } catch (clipboardErr) {
+                                            console.warn('现代剪贴板API失败，尝试备用方法: ', clipboardErr);
+                                        }
+                                    }
+                                    
+                                    // 2. 尝试直接使用execCommand
+                                    try {
+                                        activeInput.focus();
+                                        // 先清除选择，确保不会覆盖选中的文本
+                                        activeInput.setSelectionRange(activeInput.selectionStart, activeInput.selectionStart);
+                                        const successful = document.execCommand('paste');
+                                        if (successful) {
+                                            console.log('使用execCommand粘贴成功');
+                                            return true;
+                                        }
+                                    } catch (execErr) {
+                                        console.warn('execCommand粘贴失败: ', execErr);
+                                    }
+                                    
+                                    // 3. 创建一个临时输入元素处理粘贴
+                                    try {
+                                        const tempInput = document.createElement('textarea');
+                                        // 改进临时元素的样式，使其在所有浏览器中都不可见
+                                        tempInput.style.position = 'fixed';
+                                        tempInput.style.left = '-9999px';
+                                        tempInput.style.opacity = '0';
+                                        tempInput.style.pointerEvents = 'none';
+                                        tempInput.style.zIndex = '-1';
+                                        tempInput.style.width = '1px';
+                                        tempInput.style.height = '1px';
+                                        
+                                        document.body.appendChild(tempInput);
+                                        
+                                        // 确保临时元素获得焦点
+                                        tempInput.focus();
+                                        
+                                        // 使用setTimeout确保DOM更新完成
+                                        await new Promise(resolve => setTimeout(resolve, 50));
+                                        
+                                        // 尝试触发粘贴
+                                        const pasteSuccessful = document.execCommand('paste');
+                                        if (pasteSuccessful) {
+                                            // 获取粘贴的内容并插入到实际输入框
+                                            const pastedText = tempInput.value;
+                                            if (pastedText) {
+                                                const start = activeInput.selectionStart;
+                                                const end = activeInput.selectionEnd;
+                                                const value = activeInput.value;
+                                                 
+                                                activeInput.value = value.slice(0, start) + pastedText + value.slice(end);
+                                                activeInput.selectionStart = activeInput.selectionEnd = start + pastedText.length;
+                                                return true;
+                                            }
+                                        }
+                                    } catch (tempErr) {
+                                        console.warn('临时元素粘贴失败: ', tempErr);
+                                    }
+                                    
+                                    // 4. 对于Edge浏览器的特殊备用方法
+                                    if (isEdge) {
+                                        console.log('尝试Edge浏览器的最后备用方案');
+                                        // 在Edge中，可以尝试启用原生右键菜单进行粘贴
+                                        return await handleEdgeFallback();
+                                    }
+                                    
+                                    // 如果所有方法都失败，通知用户
+                                    console.error('所有粘贴方法都失败，请手动使用快捷键Ctrl+V粘贴');
+                                    return false;
+                                } finally {
+                                    // 确保焦点回到原始输入框
                                     activeInput.focus();
-                                    document.execCommand('paste');
-                                } catch (fallbackErr) {
-                                    console.error('备用粘贴方法也失败: ', fallbackErr);
                                 }
-                            });
+                            }
+                            
+                            // Edge浏览器专用粘贴处理函数
+                            async function handleEdgeBrowserPaste() {
+                                try {
+                                    // 创建临时输入框，Edge对这种方式有时更友好
+                                    const tempInput = document.createElement('textarea');
+                                    tempInput.style.position = 'fixed';
+                                    tempInput.style.left = '-9999px';
+                                    tempInput.style.opacity = '0';
+                                    tempInput.style.pointerEvents = 'none';
+                                    tempInput.style.background = 'transparent';
+                                    tempInput.style.color = 'transparent';
+                                    
+                                    // 设置自动聚焦和自动选择属性
+                                    tempInput.autofocus = true;
+                                    
+                                    document.body.appendChild(tempInput);
+                                    
+                                    // 确保DOM更新
+                                    await new Promise(resolve => setTimeout(resolve, 100));
+                                    
+                                    // 强制获取焦点
+                                    tempInput.focus();
+                                    tempInput.select();
+                                    
+                                    // 尝试使用execCommand粘贴
+                                    const pasteResult = document.execCommand('paste');
+                                    
+                                    if (pasteResult && tempInput.value) {
+                                        // 将内容插入到原始输入框
+                                        const start = activeInput.selectionStart;
+                                        const end = activeInput.selectionEnd;
+                                        const value = activeInput.value;
+                                        
+                                        activeInput.value = value.slice(0, start) + tempInput.value + value.slice(end);
+                                        activeInput.selectionStart = activeInput.selectionEnd = start + tempInput.value.length;
+                                        return true;
+                                    }
+                                } catch (err) {
+                                    console.warn('Edge专用粘贴方法失败: ', err);
+                                } finally {
+                                    // 清理临时元素
+                                    const tempInput = document.querySelector('textarea[style*="left: -9999px"]');
+                                    if (tempInput && tempInput.parentNode) {
+                                        tempInput.parentNode.removeChild(tempInput);
+                                    }
+                                }
+                                return false;
+                            }
+                            
+                            // Edge浏览器的最终备用方案
+                            async function handleEdgeFallback() {
+                                // 在某些情况下，最简单的方法是提示用户使用Ctrl+V
+                                // 但我们可以尝试模拟这个行为
+                                try {
+                                    // 确保输入框获得焦点
+                                    activeInput.focus();
+                                    
+                                    // 创建一个自定义事件，模拟Ctrl+V
+                                    const ctrlVEvent = new KeyboardEvent('keydown', {
+                                        key: 'v',
+                                        ctrlKey: true,
+                                        metaKey: true,
+                                        bubbles: true,
+                                        cancelable: true
+                                    });
+                                    
+                                    // 分发事件
+                                    const eventResult = activeInput.dispatchEvent(ctrlVEvent);
+                                    
+                                    if (eventResult) {
+                                        console.log('尝试模拟Ctrl+V事件');
+                                        // 给浏览器时间响应事件
+                                        await new Promise(resolve => setTimeout(resolve, 200));
+                                        // 检查输入框内容是否有变化
+                                        return true; // 即使不能确认，也返回true给用户尝试的机会
+                                    }
+                                } catch (err) {
+                                    console.warn('Edge备用方案失败: ', err);
+                                }
+                                return false;
+                            }
+                            
+                            // 执行智能粘贴
+                            smartPaste();
                             break;
                         case 'copy':
-                            if (window.getSelection().toString()) {
-                                document.execCommand('copy');
+                            try {
+                                // 首先尝试使用现代剪贴板API
+                                if (navigator.clipboard && window.isSecureContext) {
+                                    const selectedText = window.getSelection().toString();
+                                    if (selectedText) {
+                                        navigator.clipboard.writeText(selectedText)
+                                            .then(() => {
+                                                console.log('文本已复制到剪贴板');
+                                            })
+                                            .catch(err => {
+                                                console.warn('现代剪贴板API失败，使用备用方法: ', err);
+                                                // 备用方案：使用execCommand
+                                                fallbackCopy();
+                                            });
+                                    }
+                                } else {
+                                    // 直接使用备用方案
+                                    fallbackCopy();
+                                }
+                            } catch (err) {
+                                console.error('复制失败: ', err);
+                                // 最后的尝试：直接使用execCommand
+                                try {
+                                    activeInput.focus();
+                                    if (!document.execCommand('copy')) {
+                                        // 尝试创建临时文本区域进行复制
+                                        const tempTextArea = document.createElement('textarea');
+                                        tempTextArea.style.position = 'fixed';
+                                        tempTextArea.style.left = '-9999px';
+                                        tempTextArea.value = window.getSelection().toString();
+                                        document.body.appendChild(tempTextArea);
+                                        tempTextArea.select();
+                                        tempTextArea.setSelectionRange(0, 99999);
+                                        document.execCommand('copy');
+                                        document.body.removeChild(tempTextArea);
+                                    }
+                                } catch (finalErr) {
+                                    console.error('所有复制方法都失败: ', finalErr);
+                                    // 可以在这里添加用户通知
+                                }
+                            }
+                            
+                            function fallbackCopy() {
+                                try {
+                                    activeInput.focus();
+                                    const successful = document.execCommand('copy');
+                                    if (!successful) {
+                                        throw new Error('execCommand复制失败');
+                                    }
+                                } catch (fallbackErr) {
+                                    console.error('备用复制方法失败: ', fallbackErr);
+                                    // 使用临时元素的最后手段
+                                    const tempTextArea = document.createElement('textarea');
+                                    tempTextArea.style.position = 'fixed';
+                                    tempTextArea.style.left = '-9999px';
+                                    tempTextArea.value = window.getSelection().toString();
+                                    document.body.appendChild(tempTextArea);
+                                    tempTextArea.select();
+                                    tempTextArea.setSelectionRange(0, 99999);
+                                    try {
+                                        document.execCommand('copy');
+                                    } catch (tempErr) {
+                                        console.error('临时元素复制也失败: ', tempErr);
+                                    } finally {
+                                        document.body.removeChild(tempTextArea);
+                                    }
+                                }
                             }
                             break;
                         case 'selectAll':
@@ -1461,11 +1777,23 @@ flex: 1;
                             // 清空输入框内容
                             activeInput.value = '';
                             break;
+                        case 'refresh':
+                            // 刷新页面
+                            location.reload();
+                            break;
                     }
+                } else if (action === 'refresh') {
+                    // 在非输入框区域触发刷新
+                    location.reload();
                 }
                 
-                // 隐藏右键菜单
+                // 隐藏右键菜单并清除数据属性
                 menu.style.display = 'none';
+                // 清除数据属性
+                document.querySelectorAll('.context-menu-item').forEach(item => {
+                    delete item.dataset.messageId;
+                    delete item.dataset.elementType;
+                });
             });
         });
         
@@ -1474,16 +1802,47 @@ flex: 1;
             document.getElementById('customContextMenu').style.display = 'none';
         });
         
-        // 9. 修改全局右键菜单禁用，只对非输入框区域生效
+        // 9. 修改全局右键菜单禁用，对非输入框区域显示刷新选项
         document.addEventListener('contextmenu', function(e) {
             // 检查点击目标是否是输入元素或其子元素
             const isInputElement = inputElements.some(input => {
                 return input && (input === e.target || input.contains(e.target));
             });
             
-            // 如果不是输入元素，则禁用右键菜单
+            // 如果不是输入元素，则显示包含刷新选项的右键菜单
             if (!isInputElement) {
                 e.preventDefault();
+                
+                // 显示右键菜单，只显示刷新选项
+                const menu = document.getElementById('customContextMenu');
+                
+                // 隐藏所有菜单项
+                menu.querySelectorAll('.context-menu-item').forEach(item => {
+                    item.style.display = 'none';
+                });
+                
+                // 只显示刷新选项
+                document.getElementById('refresh').style.display = 'block';
+                
+                // 计算菜单位置
+                let left = e.clientX;
+                let top = e.clientY;
+                
+                // 边界检查
+                if (left + menu.offsetWidth > window.innerWidth) {
+                    left = window.innerWidth - menu.offsetWidth;
+                }
+                if (top + menu.offsetHeight > window.innerHeight) {
+                    top = window.innerHeight - menu.offsetHeight;
+                }
+                if (top < 0) {
+                    top = 0;
+                }
+                
+                menu.style.left = left + 'px';
+                menu.style.top = top + 'px';
+                menu.style.display = 'block';
+                
                 return false;
             }
             // 如果是输入元素，允许默认行为（将被我们的自定义处理覆盖）
@@ -3152,7 +3511,7 @@ function showNoFriendSelected() {
                         <div class="message-text">${contentHtml}</div>
                         <div class="message-info">
                             <div class="message-time">${formatMessageTime(dbMessage.created_at)}</div>
-                            <button class="recall-btn" onclick="confirmRecallMessageAction('${dbMessage.id}')">撤回</button>
+                            
                         </div>
                     `;
                 }
@@ -3300,18 +3659,102 @@ function showNoFriendSelected() {
             } else {
                 const contentHtml = processMessageContent(message.content);
                 
-                const recallButton = message.sender_id === currentUser.id ? 
-                    `<button class="recall-btn" onclick="confirmRecallMessageAction('${message.id}')">撤回</button>` : 
-                    '';
-                
                 messageElement.innerHTML = `
                     <div class="message-text">${contentHtml}</div>
                     <div class="message-info">
-                        <div class="message-time">${formatMessageTime(message.created_at)}</div>
-                        ${recallButton}
+                        <div class="message-time" style="user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;">${formatMessageTime(message.created_at)}</div>
                     </div>
                 `;
             }
+            
+            // 添加右键菜单事件
+            messageElement.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 获取消息数据
+                const messageId = this.dataset.messageId;
+                const isSender = this.classList.contains('sent');
+                const isRecalled = this.classList.contains('recalled-message');
+                
+                // 准备右键菜单
+                const menu = document.getElementById('customContextMenu');
+                
+                // 隐藏所有菜单项
+                menu.querySelectorAll('.context-menu-item').forEach(item => {
+                    item.style.display = 'none';
+                });
+                
+                // 为消息右键菜单添加特殊ID
+                const copyItem = document.getElementById('copy');
+                let recallItem = document.getElementById('recall');
+                
+                // 如果消息未被撤回，显示复制选项
+                if (!isRecalled) {
+                    copyItem.style.display = 'block';
+                    copyItem.dataset.messageId = messageId;
+                    copyItem.dataset.elementType = 'message';
+                }
+                
+                // 如果是自己发送的消息且未被撤回，显示撤回选项
+                if (isSender && !isRecalled) {
+                    // 检查撤回选项是否存在，如果不存在则创建
+                    if (!recallItem) {
+                        recallItem = document.createElement('div');
+                        recallItem.id = 'recall';
+                        recallItem.className = 'context-menu-item';
+                        recallItem.textContent = '撤回消息';
+                        recallItem.style.padding = '8px 16px';
+                        recallItem.style.cursor = 'pointer';
+                        recallItem.style.userSelect = 'none';
+                        recallItem.style.transition = 'background 0.2s';
+                        recallItem.style.fontSize = '0.9rem';
+                        recallItem.style.color = 'var(--text-color, #333)';
+                        
+                        // 添加悬停效果
+                        recallItem.addEventListener('mouseenter', function() {
+                            this.style.background = 'var(--hover-color, #f0f8ff)';
+                        });
+                        recallItem.addEventListener('mouseleave', function() {
+                            this.style.background = 'transparent';
+                        });
+                        
+                        // 添加点击事件
+                        recallItem.addEventListener('click', function() {
+                            const messageId = this.dataset.messageId;
+                            if (messageId) {
+                                confirmRecallMessageAction(messageId);
+                            }
+                        });
+                        
+                        // 插入到复制选项之后
+                        copyItem.parentNode.insertBefore(recallItem, copyItem.nextSibling);
+                    } else {
+                        recallItem.style.display = 'block';
+                        recallItem.dataset.messageId = messageId;
+                        recallItem.dataset.elementType = 'message';
+                    }
+                }
+                
+                // 计算菜单位置
+                let left = e.clientX;
+                let top = e.clientY;
+                
+                // 边界检查
+                if (left + menu.offsetWidth > window.innerWidth) {
+                    left = window.innerWidth - menu.offsetWidth;
+                }
+                if (top + menu.offsetHeight > window.innerHeight) {
+                    top = window.innerHeight - menu.offsetHeight;
+                }
+                if (top < 0) {
+                    top = 0;
+                }
+                
+                menu.style.left = left + 'px';
+                menu.style.top = top + 'px';
+                menu.style.display = 'block';
+            });
             
             chatMessages.appendChild(messageElement);
         }
